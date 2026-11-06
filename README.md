@@ -52,6 +52,13 @@ a second streamed turn. This is not a real-browser/CSP or live-model test.
 
 ## UI and extension discovery
 
+Since 0.1.4, extension planning tools can return an opaque `changeProposalId`.
+Copilot resolves the host-owned plan and displays creation, deletion, relation
+and layout operations in its approval card without applying them. A current
+host with scoped `prepareChange` / `getChangeProposal` is required. Whole-document
+conflicts and provider/document revocation reject stale plans. Direct generic
+`changes_propose` remains limited to selected existing fields.
+
 As of 0.1.1, the chat uses an adapted official Beautiful UI `chat-composer`
 registry component and scoped foundation styles, not just inspired CSS.
 The upstream scripted replies/timers are replaced by real agent events, and

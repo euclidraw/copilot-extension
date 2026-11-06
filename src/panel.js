@@ -47,7 +47,7 @@ export function ChatPanel({ store, panelContext, run, changes, tools }) {
     ...state.proposals.map(proposal => h('section', { key: proposal.change.id, className: 'bui-approval', 'aria-label': '변경 승인' },
       h('div', { className: 'bui-approval-title' }, proposal.change.kind === 'file' ? '파일 변경을 승인할까요?' : '캔버스 변경을 승인할까요?'),
       h('pre', null, JSON.stringify(proposal.change.kind === 'file' ? { path: proposal.change.path, text: proposal.change.text } : proposal.change.operations, null, 2)),
-      h('footer', null, h('small', null, proposal.change.kind === 'file' ? '외부 편집과 원자적 비교 불가 · 파일 Undo 제외' : '원본 일치 검사 · 단일 Undo'),
+      h('footer', null, h('small', null, proposal.change.kind === 'file' ? '외부 편집과 원자적 비교 불가 · 파일 Undo 제외' : '생성·수정·삭제 내역 확인 · 충돌 검사 · 단일 Undo'),
         h('button', { disabled: (proposal.change.kind === 'file' ? !files : !changes) || proposal.status !== 'pending' || state.status === 'running', onClick: () => proposal.change.kind === 'file' ? store.applyFile(proposal.change.id, files, changes?.getContext()) : store.apply(proposal.change.id, changes) }, proposal.status === 'applied' ? '적용됨' : proposal.status === 'pending' ? '승인 및 적용' : proposal.status)))));
   return h('section', { className: 'copilot', 'aria-label': 'AI chat' },
     h('style', null, chatStyle),

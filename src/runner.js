@@ -1,4 +1,5 @@
 import workerSource from './agent-worker.js?worker&inline';
+import { invokeExtensionTool } from './tool-proposals.js';
 
 /** A per-request worker is terminated on cancellation; it is not a trust sandbox. */
 export function createRunner(config, files, tools) {
@@ -32,7 +33,7 @@ export function createRunner(config, files, tools) {
           else if (data.name === 'tools_search' && tools) result = tools.search(data.args.query);
           else if (data.name === 'tool_describe' && tools) result = tools.describe(data.args.id) ?? { error: 'PROVIDER_UNAVAILABLE' };
           else if (data.name === 'entity_descriptors' && tools) result = tools.descriptors().filter(item => Object.hasOwn(context.schemas, item.aspect));
-          else if (data.name === 'tool_invoke' && tools) result = await tools.invoke(data.args.id, JSON.parse(data.args.input), signal);
+          else if (data.name === 'tool_invoke' && tools) result = await invokeExtensionTool(tools, data.args.id, JSON.parse(data.args.input), context, signal, onProposal);
           else if (data.name === 'files_list' && files) result = await files.list(signal);
           else if (data.name === 'file_read' && files) result = await files.read(data.args.path, signal);
           else if (data.name === 'file_write' && files) {
