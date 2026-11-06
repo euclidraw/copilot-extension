@@ -1,8 +1,8 @@
 import workerSource from './agent-worker.js?worker&inline';
 
 /** A per-request worker is terminated on cancellation; it is not a trust sandbox. */
-export function createRunner(config, files) {
-  return ({ text, history, context, signal, onText, onProposal }) => new Promise((resolve, reject) => {
+export function createRunner(config, files, tools) {
+  return ({ text, history, context, signal, onText, onProposal, onTool }) => new Promise((resolve, reject) => {
     const url = new URL(config.endpoint);
     if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))) throw Error('Use HTTPS or a loopback endpoint');
     if (JSON.stringify(context).length > 65536) throw Error('Selection exceeds context budget. Select fewer entities.');
@@ -22,11 +22,17 @@ export function createRunner(config, files) {
       if (data.type === 'done') finish();
       if (data.type === 'error') finish(Error(data.error));
       if (data.type === 'tool') {
+        const toolId = `${context.documentId}:${crypto.randomUUID()}`;
+        onTool?.({ id: toolId, name: data.name, status: 'running' });
         try {
           let result;
           if (data.name === 'context_get') result = { source: 'selection-at-send', documentId: context.documentId, viewId: context.viewId, selectedIds: context.selectedIds, truncated: false };
           else if (data.name === 'entities_read') result = context.entities;
           else if (data.name === 'entity_types_list') result = context.schemas;
+          else if (data.name === 'tools_search' && tools) result = tools.search(data.args.query);
+          else if (data.name === 'tool_describe' && tools) result = tools.describe(data.args.id) ?? { error: 'PROVIDER_UNAVAILABLE' };
+          else if (data.name === 'entity_descriptors' && tools) result = tools.descriptors().filter(item => Object.hasOwn(context.schemas, item.aspect));
+          else if (data.name === 'tool_invoke' && tools) result = await tools.invoke(data.args.id, JSON.parse(data.args.input), signal);
           else if (data.name === 'files_list' && files) result = await files.list(signal);
           else if (data.name === 'file_read' && files) result = await files.read(data.args.path, signal);
           else if (data.name === 'file_write' && files) {
@@ -49,10 +55,11 @@ export function createRunner(config, files) {
           }
           else throw Error('PERMISSION_DENIED');
           if (JSON.stringify(result).length > 65536) throw Error('Output budget exceeded');
+          onTool?.({ id: toolId, name: data.name, status: 'completed' });
           if (!signal.aborted) worker.postMessage({ type: 'tool-result', id: data.id, result });
-        } catch (error) { worker.postMessage({ type: 'tool-result', id: data.id, error: String(error.message) }); }
+        } catch (error) { onTool?.({ id: toolId, name: data.name, status: 'failed' }); if (!signal.aborted) worker.postMessage({ type: 'tool-result', id: data.id, error: String(error.message) }); }
       }
     };
-    worker.postMessage({ type: 'start', text, history, config, filesEnabled: !!files });
+    worker.postMessage({ type: 'start', text, history, config, filesEnabled: !!files, toolsEnabled: !!tools });
   });
 }

@@ -44,3 +44,15 @@ history; old replies are historical text, not proof that changes were applied.
 The built inline Worker is exercised with web APIs and a fake OpenAI streaming
 endpoint in a Node VM without Node globals: Pi calls a context tool and completes
 a second streamed turn. This is not a real-browser/CSP or live-model test.
+
+## UI and extension discovery
+
+The chat, context chip, tool status chips and approval surfaces use original
+React/CSS inspired by [Beautiful UI](https://www.beautifului.dev). Its site lists
+an MIT license; no component source is copied and no UI dependency is added.
+The host's single React root, IME guards and explicit approval remain unchanged.
+
+When available, `workspace.tools` enables lazy read-only tool search, schema
+description, invocation and selected-aspect semantic descriptors. Trusted tools
+must honor their read-only contract; the registry is not a sandbox. Host runtime
+binds registration identity and automatically revokes providers on unload.

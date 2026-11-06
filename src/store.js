@@ -45,7 +45,13 @@ export function createChatStore(storage = globalThis.localStorage) {
       if (lifetimeSignal?.aborted) { revoke(); return; }
       publish({ draft: '', error: null, status: 'running', messages: [...state.messages, { role: 'user', text, documentId: context.documentId }, { role: 'assistant', text: '', documentId: context.documentId }] });
       try {
-        await run({ text, history, context: frozenContext, signal: current.signal, onProposal(change) {
+        await run({ text, history, context: frozenContext, signal: current.signal, onTool(event) {
+          if (controller !== current || current.signal.aborted) return;
+          const tools = [...(state.tools ?? [])];
+          const index = tools.findIndex(tool => tool.id === event.id);
+          if (index < 0) tools.push(event); else tools[index] = event;
+          publish({ tools: tools.slice(-30) });
+        }, onProposal(change) {
           if (controller !== current || current.signal.aborted) return;
           publish({ proposals: [...state.proposals, { change, status: 'pending' }] });
         }, onText(delta) {
