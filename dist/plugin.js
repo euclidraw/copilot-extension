@@ -20,7 +20,7 @@ var c = Object.create, l = Object.defineProperty, u = Object.getOwnPropertyDescr
 }) : n, e)), v = {
 	id: "euclidraw.copilot",
 	title: "Copilot",
-	version: "0.1.2",
+	version: "0.1.3",
 	summary: "현재 문맥을 확인하고 AI와 캔버스 작업을 진행합니다.",
 	engine: "^0.1.0",
 	dependencies: {},
@@ -37840,17 +37840,48 @@ function hS({ text: t }) {
 		}
 	}, t));
 }
+// src/connection.js
+var gS = "euclidraw.copilot.connection.v1", _S = {
+	endpoint: "https://api.openai.com/v1",
+	model: "gpt-4.1-mini",
+	apiKey: ""
+}, vS = (e) => Object.fromEntries(Object.entries(_S).map(([t, n]) => [t, typeof e?.[t] == "string" ? e[t] : n]));
+function yS(e) {
+	try {
+		return vS(JSON.parse((e ?? globalThis.localStorage)?.getItem(gS) ?? "null"));
+	} catch {
+		return { ..._S };
+	}
+}
+function bS(e, t) {
+	try {
+		let n = t ?? globalThis.localStorage;
+		return n ? (n.setItem(gS, JSON.stringify(vS(e))), !0) : !1;
+	} catch {
+		return !1;
+	}
+}
+function xS(e) {
+	try {
+		let t = e ?? globalThis.localStorage;
+		return t ? (t.removeItem(gS), !0) : !1;
+	} catch {
+		return !1;
+	}
+}
 // src/panel.js
-function gS({ store: n, panelContext: a, run: o, changes: s, tools: c }) {
-	let l = i(n.subscribe, n.getSnapshot, n.getSnapshot), [u, d] = r({
-		endpoint: "https://api.openai.com/v1",
-		model: "gpt-4.1-mini",
-		apiKey: ""
-	}), [f, p] = r("chat"), [m, h] = r(null), [g, _] = r(""), [v, y] = r(() => [...a.getSelectedIds()]);
-	t(() => a.onSelectionChange((e) => y([...e])), [a]), t(() => () => n.cancel(), [n]);
-	let b = () => {
+function SS({ store: n, panelContext: a, run: o, changes: s, tools: c }) {
+	let l = i(n.subscribe, n.getSnapshot, n.getSnapshot), [u, d] = r(yS), [f, p] = r(""), m = (e, t) => {
+		let n = {
+			...u,
+			[e]: t
+		};
+		d(n), p(bS(n) ? "이 브라우저에 저장했습니다." : "저장할 수 없습니다. 현재 열린 패널에서만 유지됩니다.");
+	}, [h, g] = r("chat"), [_, v] = r(null), [y, b] = r(""), [ee, x] = r(() => [...a.getSelectedIds()]);
+	t(() => a.onSelectionChange((e) => x([...e])), [a]), t(() => () => n.cancel(), [n]);
+	let ne = () => {
 		if (!s?.getContext) {
-			_("호스트 업데이트가 필요합니다: 문서 수명주기 서비스 없음");
+			b("호스트 업데이트가 필요합니다: 문서 수명주기 서비스 없음");
 			return;
 		}
 		let { documentId: e, viewId: t, signal: r } = s.getContext(), i = [...a.getSelectedIds()].slice(0, 100), l = a.world.exportCanonicalSnapshot(), d = i.map((e) => ({
@@ -37867,8 +37898,8 @@ function gS({ store: n, panelContext: a, run: o, changes: s, tools: c }) {
 			selectedIds: i,
 			entities: d,
 			schemas: f
-		}, o ?? (u.apiKey ? te(u, m, c) : void 0), r);
-	}, ee = e("div", { className: "bui-settings" }, e("strong", null, "모델 연결"), ...[
+		}, o ?? (u.apiKey ? te(u, _, c) : void 0), r);
+	}, re = e("div", { className: "bui-settings" }, e("strong", null, "모델 연결"), ...[
 		["endpoint", "API 주소"],
 		["model", "모델"],
 		["apiKey", "API 키"]
@@ -37876,11 +37907,14 @@ function gS({ store: n, panelContext: a, run: o, changes: s, tools: c }) {
 		type: t === "apiKey" ? "password" : "text",
 		value: u[t],
 		autoComplete: "off",
-		onChange: (e) => d({
-			...u,
-			[t]: e.target.value
-		})
-	}))), e("small", null, "키는 현재 세션에만 유지됩니다. 요청 시 API 주소 운영자에게 선택한 문맥을 전송합니다.")), x = f === "settings" ? ee : e("div", { style: { display: "contents" } }, !l.messages.length && e("div", { className: "bui-empty" }, e("h3", null, "캔버스에서 함께 작업하기"), e("p", null, "선택한 내용을 살펴보고 변경을 제안합니다. 연결 설정에서 모델을 연결해 시작하세요.")), ...l.messages.map((t, n) => e("article", {
+		onChange: (e) => m(t, e.target.value)
+	}))), e("small", null, "변경 사항은 이 브라우저에 자동 저장되며 확장 업데이트 후에도 유지됩니다. API 키는 암호화되지 않은 로컬 저장소에 보관됩니다. 공용 기기에서는 사용 후 지워 주세요. 요청 시 API 주소 운영자에게 선택한 문맥을 전송합니다."), e("button", {
+		type: "button",
+		onClick: () => {
+			let e = xS();
+			d({ ..._S }), p(e ? "저장된 연결을 지웠습니다." : "저장된 연결을 지우지 못했습니다. 브라우저 사이트 데이터 설정을 확인해 주세요.");
+		}
+	}, "저장된 연결 지우기"), e("small", { role: "status" }, f)), S = h === "settings" ? re : e("div", { style: { display: "contents" } }, !l.messages.length && e("div", { className: "bui-empty" }, e("h3", null, "캔버스에서 함께 작업하기"), e("p", null, "선택한 내용을 살펴보고 변경을 제안합니다. 연결 설정에서 모델을 연결해 시작하세요.")), ...l.messages.map((t, n) => e("article", {
 		key: n,
 		className: "bui-message",
 		"data-role": t.role
@@ -37903,44 +37937,44 @@ function gS({ store: n, panelContext: a, run: o, changes: s, tools: c }) {
 		path: t.change.path,
 		text: t.change.text
 	} : t.change.operations, null, 2)), e("footer", null, e("small", null, t.change.kind === "file" ? "외부 편집과 원자적 비교 불가 · 파일 Undo 제외" : "원본 일치 검사 · 단일 Undo"), e("button", {
-		disabled: (t.change.kind === "file" ? !m : !s) || t.status !== "pending" || l.status === "running",
-		onClick: () => t.change.kind === "file" ? n.applyFile(t.change.id, m, s?.getContext()) : n.apply(t.change.id, s)
+		disabled: (t.change.kind === "file" ? !_ : !s) || t.status !== "pending" || l.status === "running",
+		onClick: () => t.change.kind === "file" ? n.applyFile(t.change.id, _, s?.getContext()) : n.apply(t.change.id, s)
 	}, t.status === "applied" ? "적용됨" : t.status === "pending" ? "승인 및 적용" : t.status)))));
 	return e("section", {
 		className: "copilot",
 		"aria-label": "AI chat"
 	}, e("style", null, ae), e(oe, {
-		tab: f,
-		onTab: p,
-		conversation: x,
-		activity: (g || l.error) && e("div", {
+		tab: h,
+		onTab: g,
+		conversation: S,
+		activity: (y || l.error) && e("div", {
 			role: "alert",
 			className: "bui-error"
-		}, g || l.error),
+		}, y || l.error),
 		draft: l.draft,
 		onDraft: n.setDraft,
-		onSend: b,
+		onSend: ne,
 		running: l.status === "running",
 		onCancel: () => n.cancel(),
 		model: u.model,
-		selection: v.length,
-		folderConnected: !!m,
+		selection: ee.length,
+		folderConnected: !!_,
 		folderAvailable: !!globalThis.showDirectoryPicker,
 		onFolder: async () => {
 			try {
-				h(ie(await showDirectoryPicker({ mode: "readwrite" })));
+				v(ie(await showDirectoryPicker({ mode: "readwrite" })));
 			} catch (e) {
-				e.name !== "AbortError" && _(String(e.message));
+				e.name !== "AbortError" && b(String(e.message));
 			}
 		}
 	}));
 }
 // src/store.js
-var _S = "euclidraw.copilot.chat.v1";
-function vS(e = globalThis.localStorage) {
+var CS = "euclidraw.copilot.chat.v1";
+function wS(e = globalThis.localStorage) {
 	let t;
 	try {
-		t = JSON.parse(e?.getItem(_S) ?? "null");
+		t = JSON.parse(e?.getItem(CS) ?? "null");
 	} catch {}
 	let n = {
 		messages: Array.isArray(t?.messages) ? t.messages.filter((e) => ["user", "assistant"].includes(e.role) && typeof e.text == "string").slice(-100) : [],
@@ -37954,7 +37988,7 @@ function vS(e = globalThis.localStorage) {
 			...t
 		};
 		try {
-			e?.setItem(_S, JSON.stringify({ messages: n.messages.slice(-100) }));
+			e?.setItem(CS, JSON.stringify({ messages: n.messages.slice(-100) }));
 		} catch {}
 		r.forEach((e) => e());
 	};
@@ -38089,14 +38123,14 @@ function vS(e = globalThis.localStorage) {
 	};
 }
 // src/index.js
-var yS = {
+var TS = {
 	...y(v),
 	summary: v.summary,
 	aspects: [],
 	activate(e) {
 		let t = e.services.get("ui.react-panels");
 		if (!t) throw Error("Copilot requires the ui.react-panels host service. Update the host.");
-		let n = vS(), r = e.services.get("ui.workbench").register(v.id, { panels: [{
+		let n = wS(), r = e.services.get("ui.workbench").register(v.id, { panels: [{
 			panelId: "euclidraw.copilot.chat",
 			title: "Copilot",
 			icon: {
@@ -38115,7 +38149,7 @@ var yS = {
 			mount(r, i) {
 				return t.mount(r, {
 					panelId: "euclidraw.copilot.chat",
-					Component: gS,
+					Component: SS,
 					props: {
 						store: n,
 						panelContext: i,
@@ -38130,4 +38164,4 @@ var yS = {
 		} };
 	}
 };
-export { yS as default };
+export { TS as default };

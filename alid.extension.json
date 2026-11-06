@@ -1,7 +1,7 @@
 {
   "apiVersion": 2,
   "id": "euclidraw.copilot",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "engine": "^0.1.0",
   "dependencies": {},
   "optionalDependencies": {},
@@ -14,7 +14,7 @@
   "title": "Copilot",
   "summary": "현재 문맥을 확인하고 AI와 캔버스 작업을 진행합니다.",
   "entry": "dist/plugin.js",
-  "sha256": "4f53b40d09106597602ce3f1df94132feea305e77ad82638b24ab06fe3897cf0",
+  "sha256": "f42729b9852304e41ea75eeab31bc95a47c4cf60861b4066d71a1bb29bb4e5cf",
   "aspectIds": [],
   "capabilities": {
     "readAspects": [],

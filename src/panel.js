@@ -4,10 +4,17 @@ import { createWorkspaceFiles } from './files.js';
 import { chatStyle } from './chat-style.js';
 import { ChatComposer } from './beautiful-ui/ChatComposer.js';
 import { MessageMarkdown } from './markdown.js';
+import { loadConnection, saveConnection, clearConnection, defaultConnection } from './connection.js';
 
 export function ChatPanel({ store, panelContext, run, changes, tools }) {
   const state = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
-  const [config, setConfig] = useState({ endpoint: 'https://api.openai.com/v1', model: 'gpt-4.1-mini', apiKey: '' });
+  const [config, setConfig] = useState(loadConnection);
+  const [connectionStatus, setConnectionStatus] = useState('');
+  const updateConfig = (field, value) => {
+    const next = { ...config, [field]: value };
+    setConfig(next);
+    setConnectionStatus(saveConnection(next) ? '이 브라우저에 저장했습니다.' : '저장할 수 없습니다. 현재 열린 패널에서만 유지됩니다.');
+  };
   const [tab, setTab] = useState('chat');
   const [files, setFiles] = useState(null), [fileError, setFileError] = useState('');
   const [selected, setSelected] = useState(() => [...panelContext.getSelectedIds()]);
@@ -25,8 +32,14 @@ export function ChatPanel({ store, panelContext, run, changes, tools }) {
   const settings = h('div', { className: 'bui-settings' },
     h('strong', null, '모델 연결'),
     ...[['endpoint', 'API 주소'], ['model', '모델'], ['apiKey', 'API 키']].map(([field, label]) => h('label', { key: field }, label,
-      h('input', { type: field === 'apiKey' ? 'password' : 'text', value: config[field], autoComplete: 'off', onChange: event => setConfig({ ...config, [field]: event.target.value }) }))),
-    h('small', null, '키는 현재 세션에만 유지됩니다. 요청 시 API 주소 운영자에게 선택한 문맥을 전송합니다.'));
+      h('input', { type: field === 'apiKey' ? 'password' : 'text', value: config[field], autoComplete: 'off', onChange: event => updateConfig(field, event.target.value) }))),
+    h('small', null, '변경 사항은 이 브라우저에 자동 저장되며 확장 업데이트 후에도 유지됩니다. API 키는 암호화되지 않은 로컬 저장소에 보관됩니다. 공용 기기에서는 사용 후 지워 주세요. 요청 시 API 주소 운영자에게 선택한 문맥을 전송합니다.'),
+    h('button', { type: 'button', onClick: () => {
+      const cleared = clearConnection();
+      setConfig({ ...defaultConnection });
+      setConnectionStatus(cleared ? '저장된 연결을 지웠습니다.' : '저장된 연결을 지우지 못했습니다. 브라우저 사이트 데이터 설정을 확인해 주세요.');
+    } }, '저장된 연결 지우기'),
+    h('small', { role: 'status' }, connectionStatus));
   const conversation = tab === 'settings' ? settings : h('div', { style: { display: 'contents' } },
     !state.messages.length && h('div', { className: 'bui-empty' }, h('h3', null, '캔버스에서 함께 작업하기'), h('p', null, '선택한 내용을 살펴보고 변경을 제안합니다. 연결 설정에서 모델을 연결해 시작하세요.')),
     ...state.messages.map((message, index) => h('article', { key: index, className: 'bui-message', 'data-role': message.role }, message.role !== 'user' && h('small', null, 'Copilot'), h(MessageMarkdown, { text: message.text }))),
