@@ -2,7 +2,7 @@ import { createElement, useEffect, useRef, useState, useSyncExternalStore } from
 var extension_default = {
 	id: "euclidraw.copilot",
 	title: "Copilot",
-	version: "0.1.0",
+	version: "0.1.1",
 	summary: "현재 문맥을 확인하고 AI와 캔버스 작업을 진행합니다.",
 	engine: "^0.1.0",
 	dependencies: {},
@@ -310,27 +310,109 @@ function createWorkspaceFiles(root) {
 }
 // src/chat-style.js
 var chatStyle = `
-.copilot{gap:12px;padding:16px;background:var(--panel-bg,#fbfbfa);color:var(--text-primary,#2f3437)}
-.copilot header{align-items:center;padding:2px 0 8px}.copilot h2{font-size:14px;letter-spacing:-.02em}
-.copilot header small{font-size:10px;text-transform:uppercase;letter-spacing:.08em}
-.copilot .context{display:flex;align-items:center;gap:6px;border:1px solid var(--border-color,#e7e7e4);border-radius:6px;padding:8px 10px;background:var(--surface-bg,#fff)}
-.copilot .context::before{content:'';width:6px;height:6px;background:#64896c;border-radius:50%}
-.copilot details{border:1px solid var(--border-color,#e7e7e4);border-radius:8px;background:var(--surface-bg,#fff);padding:10px 12px}
-.copilot summary{cursor:pointer;font-size:12px;font-weight:500}.copilot details label{font-size:11px;margin-top:10px}
-.copilot input{display:block;box-sizing:border-box;width:100%;padding:7px 8px;margin:4px 0;border:1px solid var(--border-color,#e7e7e4);border-radius:4px;background:transparent;color:inherit}
-.copilot .messages{padding:8px 0}.copilot .messages>p{color:var(--text-secondary,#787774);max-width:28ch;margin:28px auto;line-height:1.8}
-.copilot article{border:0;padding:12px 0 20px}.copilot article[data-role=user]{background:var(--surface-bg,#f1f1ee);padding:10px 12px;border-radius:8px;margin:0 0 12px 16px}
-.copilot article small{font-size:10px;font-weight:600;letter-spacing:.04em}.copilot article>div{margin-top:5px}
-.copilot textarea{min-height:96px;border-color:var(--border-color,#deded9);background:var(--surface-bg,#fff);border-radius:8px;padding:12px}
-.copilot textarea:focus-visible,.copilot input:focus-visible,.copilot button:focus-visible,.copilot summary:focus-visible{outline:2px solid #7d9486;outline-offset:2px}
-.copilot button{font-size:11px;padding:7px 11px}.copilot>button{align-self:flex-start;background:transparent;color:inherit}
-.copilot .tool-chips{display:flex;flex-wrap:wrap;gap:5px;max-height:92px;overflow:auto}
-.copilot .tool-chip{font:10px/1.6 ui-monospace,monospace;border:1px solid var(--border-color,#e7e7e4);border-radius:4px;padding:3px 6px;color:var(--text-secondary,#787774)}
-.copilot .tool-chip[data-status=completed]{color:#467353}.copilot .tool-chip[data-status=failed]{color:#9f2f2d}
-.copilot footer small{font-size:10px}.copilot pre{font-size:11px}.copilot details>button{margin-top:10px}
+.copilot{--surface:var(--alid-bg-surface,#fff);--ink:var(--alid-text,#262a31);--ink-2:var(--alid-text-secondary,#636977);--line:var(--alid-border-subtle,#e9eaed);--field:color-mix(in srgb,var(--ink) 5%,var(--surface));height:100%;min-height:0;padding:10px;box-sizing:border-box;color:var(--ink);font:13px/1.5 system-ui,sans-serif}
+.copilot *{box-sizing:border-box}.copilot button,.copilot textarea,.copilot input{font:inherit;color:inherit}
+.copilot button{cursor:pointer}.copilot button:disabled{cursor:default;opacity:.45}.copilot button:focus-visible,.copilot summary:focus-visible{outline:2px solid var(--ink-2);outline-offset:2px}
+.bui-chat{display:flex;height:100%;min-height:280px;width:100%;flex-direction:column;overflow:hidden;border-radius:14px;background:var(--surface);box-shadow:0 0 0 1px var(--line),0 1px 2px #00000006,0 3px 8px #00000005}
+.bui-chat-bar{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px;gap:8px}
+.bui-tabs{display:flex;gap:2px}.bui-tabs button{border:0;background:transparent;border-radius:6px;padding:3px 8px;font-size:13px;color:var(--ink-2)}.bui-tabs button[aria-pressed=true]{background:var(--field);color:var(--ink)}.bui-state{font-size:10px;color:var(--ink-2);padding-right:6px;white-space:nowrap}
+.bui-thread{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;padding:14px 12px;overscroll-behavior:contain}
+.bui-empty{margin:auto 0;padding:28px 8px}.bui-empty h3{font-size:18px;font-weight:500;letter-spacing:-.04em;margin:0 0 8px}.bui-empty p{color:var(--ink-2);font-size:12px;line-height:1.7;margin:0;max-width:27ch}
+.bui-message{white-space:pre-wrap;overflow-wrap:anywhere;padding:4px 0 12px}.bui-message[data-role=user]{align-self:flex-end;max-width:90%;border-radius:12px;background:var(--field);padding:7px 12px;font-size:13px;line-height:1.4;margin-left:28px}.bui-message small{display:block;font-size:11px;font-weight:500;margin-bottom:6px;color:var(--ink-2)}
+.bui-compose-wrap{flex-shrink:0;margin-top:auto;padding:6px}.bui-context{display:flex;gap:6px;padding:0 5px 8px;font-size:10px;color:var(--ink-2)}.bui-context span:first-child{border:1px solid var(--line);border-radius:6px;padding:1px 6px}.bui-context span+span{padding:2px 0}
+.bui-composer{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:8px;background:var(--field);padding:10px;box-shadow:0 1px 2px #00000009}.bui-composer:focus-within{border-color:var(--ink-2)}
+.bui-composer textarea{width:100%;min-height:62px;max-height:180px;resize:vertical;border:0;background:transparent;font-size:13px;line-height:1.4;outline:none;padding:0}.bui-composer textarea::placeholder{color:var(--ink-2)}
+.bui-compose-actions{display:flex;align-items:center;gap:8px}.bui-folder{border:0;background:transparent;padding:2px 0;font-size:11px!important;color:var(--ink-2)!important;white-space:nowrap}.bui-model{margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;font-size:10px;color:var(--ink-2)}
+.bui-send{display:flex;flex-shrink:0;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:8px;background:var(--ink);color:var(--surface)!important}.bui-send:disabled{background:var(--line);color:var(--ink-2)!important;opacity:1}.bui-hint{font-size:9px;color:var(--ink-2);text-align:center;margin:6px 0 1px}
+.bui-tool-list{display:flex;gap:5px;flex-wrap:wrap}.bui-tool{border:1px solid var(--line);border-radius:6px;padding:3px 7px;font:10px/1.5 ui-monospace,monospace;color:var(--ink-2)}.bui-tool[data-status=completed]::before{content:'✓ ';color:var(--ink)}.bui-tool[data-status=failed]::before{content:'! '}
+.bui-approval{border:1px solid var(--line);border-radius:10px;overflow:hidden}.bui-approval-title{padding:10px 12px;font-size:12px;font-weight:500;border-bottom:1px solid var(--line)}.bui-approval pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto;padding:10px 12px;margin:0;font:11px/1.6 ui-monospace,monospace;background:var(--field)}.bui-approval footer{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px}.bui-approval small{font-size:10px;color:var(--ink-2)}.bui-approval button{border:1px solid var(--line);border-radius:6px;background:var(--ink);color:var(--surface);padding:5px 10px;font-size:11px;white-space:nowrap}
+.bui-settings{display:flex;flex-direction:column;gap:14px}.bui-settings label{font-size:12px}.bui-settings input{display:block;width:100%;margin-top:5px;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--field)}.bui-settings small{font-size:11px;color:var(--ink-2)}.bui-error{font-size:12px;border:1px solid var(--line);border-radius:8px;padding:10px}
+@media(prefers-reduced-motion:no-preference){.bui-send{transition:transform .2s}.bui-send:active{transform:scale(.96)}}
 `;
+// src/beautiful-ui/ChatComposer.js
+function ChatComposer({ tab, onTab, conversation, activity, draft, onDraft, onSend, running, onCancel, model, selection, onFolder, folderConnected, folderAvailable }) {
+	const input = useRef(null), composing = useRef(false), ended = useRef(-Infinity);
+	const send = () => {
+		if (composing.current || performance.now() - ended.current < 16 || running || !draft.trim()) return;
+		onSend();
+	};
+	return createElement("div", {
+		className: "bui-chat",
+		"data-beautiful-ui": "chat-composer"
+	}, createElement("div", { className: "bui-chat-bar" }, createElement("div", {
+		className: "bui-tabs",
+		"aria-label": "Copilot 보기"
+	}, ...[["chat", "대화"], ["settings", "연결 설정"]].map(([id, label]) => createElement("button", {
+		key: id,
+		type: "button",
+		"aria-pressed": tab === id,
+		onClick: () => onTab(id)
+	}, label))), createElement("span", {
+		className: "bui-state",
+		role: "status"
+	}, running ? "응답 중" : "Copilot")), createElement("div", { className: "bui-thread" }, conversation, activity), tab === "chat" && createElement("div", { className: "bui-compose-wrap" }, createElement("div", { className: "bui-context" }, createElement("span", null, `선택 ${selection}개`), createElement("span", null, "현재 캔버스")), createElement("div", {
+		className: "bui-composer",
+		onClick: () => input.current?.focus()
+	}, createElement("textarea", {
+		ref: input,
+		value: draft,
+		"aria-label": "메시지",
+		placeholder: "무엇을 도와드릴까요?",
+		rows: 3,
+		onChange: (event) => onDraft(event.target.value),
+		onCompositionStart: () => {
+			composing.current = true;
+		},
+		onCompositionEnd: () => {
+			composing.current = false;
+			ended.current = performance.now();
+		},
+		onKeyDown: (event) => {
+			if (composing.current || event.nativeEvent.isComposing || event.keyCode === 229 || event.key === "Process" || performance.now() - ended.current < 16) return;
+			if (event.key === "Enter" && !event.shiftKey) {
+				event.preventDefault();
+				send();
+			}
+		}
+	}), createElement("div", { className: "bui-compose-actions" }, createElement("button", {
+		type: "button",
+		className: "bui-folder",
+		disabled: running || folderConnected || !folderAvailable,
+		onClick: (event) => {
+			event.stopPropagation();
+			onFolder();
+		}
+	}, folderConnected ? "폴더 연결됨" : "+ 폴더"), createElement("span", {
+		className: "bui-model",
+		title: model
+	}, model), createElement("button", {
+		type: "button",
+		className: "bui-send",
+		"aria-label": running ? "응답 중단" : "메시지 보내기",
+		disabled: !running && !draft.trim(),
+		onClick: (event) => {
+			event.stopPropagation();
+			running ? onCancel() : send();
+		}
+	}, createElement("svg", {
+		width: 16,
+		height: 16,
+		viewBox: "0 0 24 24",
+		fill: "none",
+		stroke: "currentColor",
+		strokeWidth: 2.4,
+		strokeLinecap: "round",
+		strokeLinejoin: "round",
+		"aria-hidden": true
+	}, running ? createElement("rect", {
+		x: 6,
+		y: 6,
+		width: 12,
+		height: 12,
+		rx: 2
+	}) : createElement("path", { d: "M12 19V5M5 12l7-7 7 7" }))))), createElement("p", { className: "bui-hint" }, "변경은 승인 후 적용 · Shift + Enter 줄바꿈")));
+}
 // src/panel.js
-var css = `:host{color:var(--text-primary,#2f3437)}.copilot{display:flex;flex-direction:column;height:100%;padding:16px;box-sizing:border-box;font:13px/1.6 system-ui,sans-serif;gap:16px}.copilot header{display:flex;justify-content:space-between}.copilot h2{font-size:16px;margin:0}.copilot small{color:var(--text-secondary,#787774)}.copilot .context{font-size:11px;border-block:1px solid #eaeaea;padding:8px 0}.copilot .messages{flex:1;overflow:auto;min-height:60px}.copilot article{padding:12px 0;border-bottom:1px solid #eaeaea;white-space:pre-wrap;overflow-wrap:anywhere}.copilot textarea{box-sizing:border-box;width:100%;min-height:100px;resize:vertical;background:transparent;color:inherit;border:1px solid #eaeaea;border-radius:6px;padding:10px;font:inherit}.copilot button{border:1px solid #eaeaea;border-radius:4px;padding:7px 12px;background:#2f3437;color:white;cursor:pointer}.copilot button:disabled{opacity:.4}.copilot footer{display:flex;justify-content:space-between;align-items:center}.copilot [role=alert]{color:#9f2f2d}`;
 function ChatPanel({ store, panelContext, run, changes, tools }) {
 	const state = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
 	const [config, setConfig] = useState({
@@ -338,13 +420,12 @@ function ChatPanel({ store, panelContext, run, changes, tools }) {
 		model: "gpt-4.1-mini",
 		apiKey: ""
 	});
+	const [tab, setTab] = useState("chat");
 	const [files, setFiles] = useState(null), [fileError, setFileError] = useState("");
 	const [selected, setSelected] = useState(() => [...panelContext.getSelectedIds()]);
-	const composing = useRef(false), ended = useRef(-Infinity);
 	useEffect(() => panelContext.onSelectionChange((ids) => setSelected([...ids])), [panelContext]);
 	useEffect(() => () => store.cancel(), [store]);
 	const send = () => {
-		if (composing.current || performance.now() - ended.current < 16) return;
 		if (!changes?.getContext) {
 			setFileError("호스트 업데이트가 필요합니다: 문서 수명주기 서비스 없음");
 			return;
@@ -369,17 +450,11 @@ function ChatPanel({ store, panelContext, run, changes, tools }) {
 			schemas
 		}, run ?? (config.apiKey ? createRunner(config, files, tools) : void 0), signal);
 	};
-	return createElement("section", {
-		className: "copilot",
-		"aria-label": "AI chat"
-	}, createElement("style", null, css + chatStyle), createElement("header", null, createElement("h2", null, "Copilot"), createElement("small", null, state.status)), createElement("div", { className: "context" }, `현재 캔버스 · 선택 ${selected.length}개`), createElement("details", null, createElement("summary", null, "모델 연결 (현재 세션만)"), ...[
-		"endpoint",
-		"model",
-		"apiKey"
-	].map((field) => createElement("label", {
-		key: field,
-		style: { display: "block" }
-	}, field, createElement("input", {
+	const settings = createElement("div", { className: "bui-settings" }, createElement("strong", null, "모델 연결"), ...[
+		["endpoint", "API 주소"],
+		["model", "모델"],
+		["apiKey", "API 키"]
+	].map(([field, label]) => createElement("label", { key: field }, label, createElement("input", {
 		type: field === "apiKey" ? "password" : "text",
 		value: config[field],
 		autoComplete: "off",
@@ -387,64 +462,61 @@ function ChatPanel({ store, panelContext, run, changes, tools }) {
 			...config,
 			[field]: event.target.value
 		})
-	}))), createElement("small", null, "키는 저장하지 않습니다. endpoint 운영자에게 선택 데이터를 보냅니다.")), createElement("button", {
-		disabled: state.status === "running" || !!files || !globalThis.showDirectoryPicker,
-		onClick: async () => {
+	}))), createElement("small", null, "키는 현재 세션에만 유지됩니다. 요청 시 API 주소 운영자에게 선택한 문맥을 전송합니다."));
+	const conversation = tab === "settings" ? settings : createElement("div", { style: { display: "contents" } }, !state.messages.length && createElement("div", { className: "bui-empty" }, createElement("h3", null, "캔버스에서 함께 작업하기"), createElement("p", null, "선택한 내용을 살펴보고 변경을 제안합니다. 연결 설정에서 모델을 연결해 시작하세요.")), ...state.messages.map((message, index) => createElement("article", {
+		key: index,
+		className: "bui-message",
+		"data-role": message.role
+	}, message.role !== "user" && createElement("small", null, "Copilot"), createElement("div", null, message.text))), !!state.tools?.length && createElement("div", {
+		className: "bui-tool-list",
+		"aria-label": "도구 실행 기록"
+	}, ...state.tools.map((tool) => createElement("span", {
+		key: tool.id,
+		className: "bui-tool",
+		"data-status": tool.status
+	}, `${tool.name} · ${{
+		running: "실행 중",
+		completed: "완료",
+		failed: "실패"
+	}[tool.status] ?? tool.status}`))), ...state.proposals.map((proposal) => createElement("section", {
+		key: proposal.change.id,
+		className: "bui-approval",
+		"aria-label": "변경 승인"
+	}, createElement("div", { className: "bui-approval-title" }, proposal.change.kind === "file" ? "파일 변경을 승인할까요?" : "캔버스 변경을 승인할까요?"), createElement("pre", null, JSON.stringify(proposal.change.kind === "file" ? {
+		path: proposal.change.path,
+		text: proposal.change.text
+	} : proposal.change.operations, null, 2)), createElement("footer", null, createElement("small", null, proposal.change.kind === "file" ? "외부 편집과 원자적 비교 불가 · 파일 Undo 제외" : "원본 일치 검사 · 단일 Undo"), createElement("button", {
+		disabled: (proposal.change.kind === "file" ? !files : !changes) || proposal.status !== "pending" || state.status === "running",
+		onClick: () => proposal.change.kind === "file" ? store.applyFile(proposal.change.id, files, changes?.getContext()) : store.apply(proposal.change.id, changes)
+	}, proposal.status === "applied" ? "적용됨" : proposal.status === "pending" ? "승인 및 적용" : proposal.status)))));
+	return createElement("section", {
+		className: "copilot",
+		"aria-label": "AI chat"
+	}, createElement("style", null, chatStyle), createElement(ChatComposer, {
+		tab,
+		onTab: setTab,
+		conversation,
+		activity: (fileError || state.error) && createElement("div", {
+			role: "alert",
+			className: "bui-error"
+		}, fileError || state.error),
+		draft: state.draft,
+		onDraft: store.setDraft,
+		onSend: send,
+		running: state.status === "running",
+		onCancel: () => store.cancel(),
+		model: config.model,
+		selection: selected.length,
+		folderConnected: !!files,
+		folderAvailable: !!globalThis.showDirectoryPicker,
+		onFolder: async () => {
 			try {
 				setFiles(createWorkspaceFiles(await showDirectoryPicker({ mode: "readwrite" })));
 			} catch (error) {
 				if (error.name !== "AbortError") setFileError(String(error.message));
 			}
 		}
-	}, files ? "폴더 연결됨 · 파일 변경은 개별 승인" : "작업 폴더 연결"), fileError && createElement("div", { role: "alert" }, fileError), createElement("div", {
-		className: "messages",
-		"aria-live": "polite",
-		role: "log"
-	}, !state.messages.length && createElement("p", null, "현재 선택을 문맥으로 사용합니다. 필요한 작업을 적어 주세요."), ...state.messages.map((message, index) => createElement("article", {
-		key: index,
-		"data-role": message.role
-	}, createElement("small", null, message.role === "user" ? "You" : "Copilot"), createElement("div", null, message.text)))), !!state.tools?.length && createElement("div", {
-		className: "tool-chips",
-		"aria-label": "도구 실행 기록"
-	}, ...state.tools.map((tool) => createElement("span", {
-		key: tool.id,
-		className: "tool-chip",
-		"data-status": tool.status
-	}, `${tool.name} · ${tool.status}`))), state.error && createElement("div", { role: "alert" }, state.error), ...state.proposals.map((proposal) => createElement("details", { key: proposal.change.id }, createElement("summary", null, `변경 제안 · ${proposal.status}`), createElement("pre", { style: {
-		whiteSpace: "pre-wrap",
-		overflowWrap: "anywhere",
-		maxHeight: 200,
-		overflow: "auto"
-	} }, JSON.stringify(proposal.change.kind === "file" ? {
-		path: proposal.change.path,
-		text: proposal.change.text,
-		expectedRevision: proposal.change.expectedRevision
-	} : proposal.change.operations, null, 2)), proposal.change.kind === "file" && createElement("small", null, "외부 편집과 원자적 비교 불가. 파일은 캔버스 Undo에 포함되지 않습니다."), createElement("button", {
-		disabled: (proposal.change.kind === "file" ? !files : !changes) || proposal.status !== "pending" || state.status === "running",
-		onClick: () => proposal.change.kind === "file" ? store.applyFile(proposal.change.id, files, changes?.getContext()) : store.apply(proposal.change.id, changes)
-	}, proposal.change.kind === "file" ? "파일 쓰기 승인" : "검증 후 적용 (Undo 가능)"))), createElement("textarea", {
-		value: state.draft,
-		"aria-label": "메시지",
-		placeholder: "캔버스에 관해 요청하기…",
-		onChange: (event) => store.setDraft(event.target.value),
-		onCompositionStart: () => {
-			composing.current = true;
-		},
-		onCompositionEnd: () => {
-			composing.current = false;
-			ended.current = performance.now();
-		},
-		onKeyDown(event) {
-			if (composing.current || event.nativeEvent.isComposing || event.keyCode === 229 || event.key === "Process" || performance.now() - ended.current < 16) return;
-			if (event.key === "Enter" && !event.shiftKey) {
-				event.preventDefault();
-				send();
-			}
-		}
-	}), createElement("footer", null, createElement("small", null, "Shift + Enter 줄바꿈"), state.status === "running" ? createElement("button", { onClick: () => store.cancel() }, "중단") : createElement("button", {
-		onClick: send,
-		disabled: !state.draft.trim()
-	}, "보내기")));
+	}));
 }
 // src/store.js
 var key = "euclidraw.copilot.chat.v1";

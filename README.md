@@ -47,9 +47,11 @@ a second streamed turn. This is not a real-browser/CSP or live-model test.
 
 ## UI and extension discovery
 
-The chat, context chip, tool status chips and approval surfaces use original
-React/CSS inspired by [Beautiful UI](https://www.beautifului.dev). Its site lists
-an MIT license; no component source is copied and no UI dependency is added.
+As of 0.1.1, the chat uses an adapted official Beautiful UI `chat-composer`
+registry component and scoped foundation styles, not just inspired CSS.
+The upstream scripted replies/timers are replaced by real agent events, and
+IME-safe multiline input is retained. See `THIRD_PARTY_NOTICES.md` for the MIT
+license and adaptation details. Tool/approval surfaces are local integrations.
 The host's single React root, IME guards and explicit approval remain unchanged.
 
 When available, `workspace.tools` enables lazy read-only tool search, schema
