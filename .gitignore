@@ -4,3 +4,5 @@ node_modules/
 .DS_Store
 # dist/plugin.js and alid.extension.json are intentionally committed.
 .alid-dev/
+src/beautiful-ui/upstream/build.css
+src/beautiful-ui/generated.css

@@ -1,5 +1,10 @@
 # Euclidraw Copilot
 
+0.1.10 vendors the official Beautiful UI registry sources and compiles the
+foundation with Tailwind 4 + shadow-plugin into the runtime bundle. ChatComposer
+uses upstream utilities and a shared Section for assistant replies/progress.
+See `src/beautiful-ui/README.md` for exact adaptations and integration boundaries.
+
 0.1.9 adds a header **새 대화** action. After confirmation it aborts the active
 request, clears messages/draft/tool events/pending approvals and stored chat
 history, and starts with no model history. Connection settings, folder access

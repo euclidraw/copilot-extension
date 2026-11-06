@@ -1,5 +1,6 @@
-// Beautiful UI foundation + ChatComposer adaptation; see THIRD_PARTY_NOTICES.md.
-export const chatStyle = `
+import foundation from './beautiful-ui/foundation.generated.js';
+// Compiled official foundation/utilities, followed by integration-only styles.
+export const chatStyle = foundation + `
 .bui-header-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}.bui-new-session{border:0;border-radius:6px;background:transparent;padding:4px 6px;font-size:11px!important;white-space:nowrap}.bui-new-session:hover{background:var(--field)}
 .bui-activity-stack,.bui-reasoning{flex-shrink:0;min-width:0}
 .bui-activity-stack:empty{display:none}.bui-run-activity{padding:10px 0 12px}.bui-run-heading{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500}.bui-run-time{margin-left:auto;font-size:11px;font-weight:400;color:var(--ink-2);font-variant-numeric:tabular-nums}.bui-run-activity p{margin:6px 0 0;font-size:11px;line-height:1.6;color:var(--ink-2);overflow-wrap:anywhere}
@@ -12,20 +13,20 @@ export const chatStyle = `
 .bui-markdown code{font:11px/1.6 ui-monospace,monospace;background:var(--field);border-radius:4px;padding:2px 4px}.bui-markdown pre{max-width:100%;overflow:auto;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre;tab-size:2}.bui-markdown pre code{padding:0;background:transparent}
 .bui-markdown table{display:block;max-width:100%;overflow:auto;border-collapse:collapse;font-size:12px}.bui-markdown :is(th,td){padding:6px 8px;border:1px solid var(--line);text-align:left}.bui-markdown th{background:var(--field)}.bui-markdown a{color:inherit;text-decoration:underline;text-underline-offset:3px}.bui-markdown hr{border:0;border-top:1px solid var(--line);margin:12px 0}
 .bui-markdown .katex-display{display:block;max-width:100%;overflow-x:auto;padding:10px 0;margin:6px 0}.bui-markdown math{font-size:1.1em}.bui-markdown .katex-error{color:var(--ink-2);font:11px/1.5 ui-monospace,monospace}.bui-markdown input[type=checkbox]{pointer-events:none}.bui-image-alt{color:var(--ink-2);font-size:12px}
-.copilot{--surface:var(--alid-bg-surface,#fff);--ink:var(--alid-text,#262a31);--ink-2:var(--alid-text-secondary,#636977);--line:var(--alid-border-subtle,#e9eaed);--field:color-mix(in srgb,var(--ink) 5%,var(--surface));height:100%;min-height:0;padding:0;box-sizing:border-box;color:var(--ink);font:13px/1.5 system-ui,sans-serif}
+.copilot{height:100%;min-height:0;padding:0;box-sizing:border-box;background:var(--surface);color:var(--ink);font:13px/1.5 system-ui,sans-serif;letter-spacing:-.01em}
 .copilot *{box-sizing:border-box}.copilot button,.copilot textarea,.copilot input{font:inherit;color:inherit}
 .copilot button{cursor:pointer}.copilot button:disabled{cursor:default;opacity:.45}.copilot button:focus-visible,.copilot summary:focus-visible{outline:2px solid var(--ink-2);outline-offset:2px}
 .bui-chat{display:flex;height:100%;min-height:0;width:100%;flex-direction:column;overflow:hidden;background:transparent}
 .bui-chat-bar{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px;gap:8px}
-.bui-tabs{display:flex;gap:2px}.bui-tabs button{border:0;background:transparent;border-radius:6px;padding:3px 8px;font-size:13px;color:var(--ink-2)}.bui-tabs button[aria-pressed=true]{background:var(--field);color:var(--ink)}.bui-state{font-size:10px;color:var(--ink-2);padding-right:6px;white-space:nowrap}
-.bui-thread{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;padding:14px 12px;overscroll-behavior:contain}
+.bui-tabs{display:flex;gap:2px}.bui-state{font-size:10px;color:var(--ink-2);padding-right:6px;white-space:nowrap}
+.bui-thread{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
 /* The thread owns scrolling; its content must never shrink to fit its height.
    Include grandchildren promoted by the conversation's display:contents. */
 .bui-thread :is(.bui-message,.bui-approval,.bui-tool-list,.bui-empty,.bui-settings,.bui-error){flex-shrink:0;min-width:0}
 .bui-empty{margin:auto 0;padding:28px 8px}.bui-empty h3{font-size:18px;font-weight:500;letter-spacing:-.04em;margin:0 0 8px}.bui-empty p{color:var(--ink-2);font-size:12px;line-height:1.7;margin:0;max-width:27ch}
 .bui-message{white-space:pre-wrap;overflow-wrap:anywhere;padding:4px 0 12px}.bui-message[data-role=user]{align-self:flex-end;max-width:90%;border-radius:12px;background:var(--field);padding:7px 12px;font-size:13px;line-height:1.4;margin-left:28px}.bui-message small{display:block;font-size:11px;font-weight:500;margin-bottom:6px;color:var(--ink-2)}
 .bui-compose-wrap{flex-shrink:0;margin-top:auto;padding:6px}.bui-context{display:flex;gap:6px;padding:0 5px 8px;font-size:10px;color:var(--ink-2)}.bui-context span:first-child{border:1px solid var(--line);border-radius:6px;padding:1px 6px}.bui-context span+span{padding:2px 0}
-.bui-composer{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:8px;background:var(--field);padding:10px;box-shadow:0 1px 2px #00000009}.bui-composer:focus-within{border-color:var(--ink-2)}
+.bui-section{transform-origin:top left}.bui-section[data-resolving=true]{opacity:.75}@media(prefers-reduced-motion:no-preference){.bui-section{animation:fade-up 400ms cubic-bezier(.23,1,.32,1) both}}
 .bui-composer textarea{width:100%;min-height:62px;max-height:180px;resize:vertical;border:0;background:transparent;font-size:13px;line-height:1.4;outline:none;padding:0}.bui-composer textarea::placeholder{color:var(--ink-2)}
 .bui-compose-actions{display:flex;align-items:center;gap:8px}.bui-folder{border:0;background:transparent;padding:2px 0;font-size:11px!important;color:var(--ink-2)!important;white-space:nowrap}.bui-model{margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;font-size:10px;color:var(--ink-2)}
 .bui-send{display:flex;flex-shrink:0;align-items:center;justify-content:center;width:28px;height:28px;border:0;border-radius:8px;background:var(--ink);color:var(--surface)!important}.bui-send:disabled{background:var(--line);color:var(--ink-2)!important;opacity:1}.bui-hint{font-size:9px;color:var(--ink-2);text-align:center;margin:6px 0 1px}

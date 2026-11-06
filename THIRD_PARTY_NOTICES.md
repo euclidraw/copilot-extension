@@ -1,5 +1,10 @@
 # Beautiful UI
 
+`src/beautiful-ui/upstream/*` contains the original ChatComposer and foundation
+registry source. The foundation is compiled and embedded, not merely imitated.
+`Section.js` adapts the upstream Section; detailed changes are documented in
+`src/beautiful-ui/README.md`. All these files are covered by the MIT notice below.
+
 `src/beautiful-ui/RunActivity.js` also adapts the ChatComposer Section's
 label/sub/time hierarchy for real waiting/tool/streaming state and a native
 reasoning disclosure. Demo resolving blur and simulated phase timers are not used.

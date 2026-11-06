@@ -1,6 +1,7 @@
 // Adapts Beautiful UI ChatComposer's Section label/sub/time hierarchy and
 // resolving treatment to real agent events; no simulated reasoning or progress.
 import { createElement as h, useEffect, useState } from 'react';
+import { Section } from './Section.js';
 
 export function activityLabel(state) {
   if (state.status === 'cancelled') return '응답을 중단했습니다';
@@ -21,12 +22,12 @@ export function RunActivity({ state }) {
     return () => clearInterval(timer);
   }, [running, state.startedAt]);
   if (!running && !['cancelled', 'error'].includes(state.status)) return null;
-  return h('div', { className: 'bui-run-activity', 'data-running': running, 'data-beautiful-ui': 'section' },
+  return h('div', { className: 'bui-run-activity', 'data-running': running, 'data-beautiful-ui': 'section' }, h(Section, { label: 'Copilot', sub: running ? '진행 중' : '요청 상태', resolving: running },
     h('div', { className: 'bui-run-heading' },
       running && h('span', { className: 'bui-working-dots', 'aria-hidden': true }, h('i'), h('i'), h('i')),
       h('span', { role: 'status', 'aria-live': 'polite' }, activityLabel(state)),
       running && h('span', { className: 'bui-run-time', 'aria-label': '경과 시간' }, `${Math.max(0, Math.floor((now - state.startedAt) / 1000))}초`)),
-    running && h('p', null, state.phase === 'tool' ? state.activeTool : state.phase === 'waiting' ? '응답이 도착하면 여기에 표시됩니다. 중단 버튼으로 취소할 수 있습니다.' : state.phase === 'reasoning' ? '모델이 제공한 추론을 아래에서 확인할 수 있습니다.' : '메시지를 실시간으로 받고 있습니다.'));
+    running && h('p', null, state.phase === 'tool' ? state.activeTool : state.phase === 'waiting' ? '응답이 도착하면 여기에 표시됩니다. 중단 버튼으로 취소할 수 있습니다.' : state.phase === 'reasoning' ? '모델이 제공한 추론을 아래에서 확인할 수 있습니다.' : '메시지를 실시간으로 받고 있습니다.')));
 }
 
 export function ReasoningSection({ text }) {
