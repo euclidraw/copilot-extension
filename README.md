@@ -59,6 +59,10 @@ host with scoped `prepareChange` / `getChangeProposal` is required. Whole-docume
 conflicts and provider/document revocation reject stale plans. Direct generic
 `changes_propose` remains limited to selected existing fields.
 
+0.1.5 clarifies complete tool discovery (`tools_search` with an empty query),
+the location of approval cards inside Copilot, and that refreshing discards
+pending plans. Repeated validation errors must not trigger invented payloads.
+
 As of 0.1.1, the chat uses an adapted official Beautiful UI `chat-composer`
 registry component and scoped foundation styles, not just inspired CSS.
 The upstream scripted replies/timers are replaced by real agent events, and
