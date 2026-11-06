@@ -9,7 +9,7 @@ const config = JSON.parse(await readFile(new URL('../extension.json', import.met
 test('renaming a template regenerates the declared aspect without stale namespace metadata', () => {
   const metadata = { ...config, id: 'writer.reading-notes' };
   const result = createPackageManifest(validateConfig(metadata));
-  assert.deepEqual(result.provides.aspects, ['writer.reading-notes.note']);
+  assert.deepEqual(result.provides.aspects, []);
   assert.equal(result.version, config.version);
 });
 

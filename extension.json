@@ -1,8 +1,8 @@
 {
-  "id": "example.sticky-notes",
-  "title": "스티키 노트",
-  "version": "0.3.0",
-  "summary": "캔버스에 짧은 메모를 추가하고 내용과 색상을 편집합니다.",
+  "id": "euclidraw.copilot",
+  "title": "Copilot",
+  "version": "0.1.0",
+  "summary": "현재 문맥을 확인하고 AI와 캔버스 작업을 진행합니다.",
   "engine": "^0.1.0",
   "dependencies": {},
   "optionalDependencies": {},
