@@ -1,5 +1,10 @@
 # Euclidraw Copilot
 
+0.1.11 adapts the official Beautiful UI ApprovalCard, Button and ThinkingState
+Reasoning sources for change approvals and expandable reasoning. Approval cards
+offer explicit reject/apply actions and collapsible operation details; demo
+auto-advance/submit is not used. Rejected plans cannot subsequently be applied.
+
 0.1.10 vendors the official Beautiful UI registry sources and compiles the
 foundation with Tailwind 4 + shadow-plugin into the runtime bundle. ChatComposer
 uses upstream utilities and a shared Section for assistant replies/progress.

@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createElement as h } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { RunActivity, ReasoningSection, activityLabel } from '../src/beautiful-ui/RunActivity.js';
+import { RunActivity, activityLabel } from '../src/beautiful-ui/RunActivity.js';
+import { ThinkingState } from '../src/beautiful-ui/ThinkingState.js';
 import { createChatStore } from '../src/store.js';
 
 test('pending requests immediately show honest waiting feedback without fabricated reasoning', () => {
@@ -15,8 +16,8 @@ test('pending requests immediately show honest waiting feedback without fabricat
   assert.equal(activityLabel({ status: 'cancelled' }), '응답을 중단했습니다');
 });
 test('reasoning is an escaped, collapsed disclosure, not rendered as an assistant answer', () => {
-  const html = renderToStaticMarkup(h(ReasoningSection, { text: '<script>not executable</script>' }));
-  assert.match(html, /<details/); assert.doesNotMatch(html, / open|<script>/);
+  const html = renderToStaticMarkup(h(ThinkingState, { text: '<script>not executable</script>' }));
+  assert.match(html, /aria-expanded="false"/); assert.match(html, /hidden=""/); assert.doesNotMatch(html, /<script>/);
   assert.match(html, /모델 추론/);
 });
 test('real run phases and reasoning follow event order and reject late reasoning after cancellation', async () => {

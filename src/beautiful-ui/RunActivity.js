@@ -29,9 +29,3 @@ export function RunActivity({ state }) {
       running && h('span', { className: 'bui-run-time', 'aria-label': '경과 시간' }, `${Math.max(0, Math.floor((now - state.startedAt) / 1000))}초`)),
     running && h('p', null, state.phase === 'tool' ? state.activeTool : state.phase === 'waiting' ? '응답이 도착하면 여기에 표시됩니다. 중단 버튼으로 취소할 수 있습니다.' : state.phase === 'reasoning' ? '모델이 제공한 추론을 아래에서 확인할 수 있습니다.' : '메시지를 실시간으로 받고 있습니다.')));
 }
-
-export function ReasoningSection({ text }) {
-  return h('details', { className: 'bui-reasoning', 'data-beautiful-ui': 'section' },
-    h('summary', null, '모델 추론', h('span', null, '내용 보기')),
-    h('div', { className: 'bui-reasoning-body' }, text));
-}

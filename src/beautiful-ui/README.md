@@ -20,3 +20,11 @@ session/settings/folder controls, chronological timeline, scrolling, Markdown,
 reasoning disclosure and explicit approval cards. Those integrations are local,
 not upstream Beautiful UI components. Resolving text is not blurred, and motion
 honors reduced-motion. No claim of pixel identity or browser visual validation.
+
+0.1.11 also vendors ApprovalCard.tsx, ThinkingState.tsx and Button.tsx. Their
+adaptations use the original approval surface/footer/pill button classes and
+ThinkingState Reasoning header/chevron/trace structure. Questionnaire steps,
+GlideMenu options, fake stage timers and auto-submit are removed: actual plans
+need explicit approval, reject is terminal, and applied status follows host
+success. Thinking expansion is controlled by an accessible button and actual
+provider text, with reduced-motion-safe shimmer. No fixed trace minimum height.

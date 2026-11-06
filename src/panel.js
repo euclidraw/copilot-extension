@@ -4,7 +4,9 @@ import { createWorkspaceFiles } from './files.js';
 import { chatStyle } from './chat-style.js';
 import { ChatComposer } from './beautiful-ui/ChatComposer.js';
 import { MessageMarkdown } from './markdown.js';
-import { RunActivity, ReasoningSection } from './beautiful-ui/RunActivity.js';
+import { RunActivity } from './beautiful-ui/RunActivity.js';
+import { ThinkingState } from './beautiful-ui/ThinkingState.js';
+import { ApprovalCard } from './beautiful-ui/ApprovalCard.js';
 import { Section } from './beautiful-ui/Section.js';
 import { loadConnection, saveConnection, clearConnection, defaultConnection } from './connection.js';
 
@@ -45,16 +47,16 @@ export function ChatPanel({ store, panelContext, run, changes, tools }) {
   const conversation = tab === 'settings' ? settings : h('div', { style: { display: 'contents' } },
     !state.messages.length && h('div', { className: 'bui-empty' }, h('h3', null, '캔버스에서 함께 작업하기'), h('p', null, '선택한 내용을 살펴보고 변경을 제안합니다. 연결 설정에서 모델을 연결해 시작하세요.')),
     ...state.timeline.map((item, index) => {
-      if (item.kind === 'reasoning') return h(ReasoningSection, { key: index, text: item.text });
+      if (item.kind === 'reasoning') return h(ThinkingState, { key: index, text: item.text, working: state.status === 'running' && state.phase === 'reasoning' && index === state.timeline.length - 1 });
       if (item.kind === 'message') return h('article', { key: index, className: 'bui-message', 'data-role': item.role }, item.role === 'user' ? h(MessageMarkdown, { text: item.text }) : h(Section, { label: 'Copilot' }, h(MessageMarkdown, { text: item.text })));
       if (item.kind === 'tool') return h('div', { key: index, className: 'bui-tool-list', 'aria-label': '도구 실행 기록' }, h('span', { className: 'bui-tool', 'data-status': item.status }, `${item.name} · ${{ running: '실행 중', completed: '완료', failed: '실패' }[item.status] ?? item.status}`));
       const proposal = state.proposals.find(proposal => proposal.change.id === item.id);
       if (!proposal) return null;
-      return h('section', { key: index, className: 'bui-approval', 'aria-label': '변경 승인' },
-      h('div', { className: 'bui-approval-title' }, proposal.change.kind === 'file' ? '파일 변경을 승인할까요?' : '캔버스 변경을 승인할까요?'),
-      h('pre', null, JSON.stringify(proposal.change.kind === 'file' ? { path: proposal.change.path, text: proposal.change.text } : proposal.change.operations, null, 2)),
-      h('footer', null, h('small', null, proposal.change.kind === 'file' ? '외부 편집과 원자적 비교 불가 · 파일 Undo 제외' : '생성·수정·삭제 내역 확인 · 충돌 검사 · 단일 Undo'),
-        h('button', { disabled: (proposal.change.kind === 'file' ? !files : !changes) || proposal.status !== 'pending' || state.status === 'running', onClick: () => proposal.change.kind === 'file' ? store.applyFile(proposal.change.id, files, changes?.getContext()) : store.apply(proposal.change.id, changes) }, proposal.status === 'applied' ? '적용됨' : proposal.status === 'pending' ? '승인 및 적용' : proposal.status)));
+      return h(ApprovalCard, { key: index, proposal,
+        disabled: (proposal.change.kind === 'file' ? !files : !changes) || state.status === 'running',
+        onReject: () => store.reject(proposal.change.id),
+        onApprove: () => proposal.change.kind === 'file' ? store.applyFile(proposal.change.id, files, changes?.getContext()) : store.apply(proposal.change.id, changes),
+      });
     }));
   return h('section', { className: 'copilot', 'aria-label': 'AI chat' },
     h('style', null, chatStyle),
