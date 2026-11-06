@@ -8,7 +8,7 @@ export async function buildBeautifulUI() {
   const css = source.replace('  .records-footer-hint {\n    display: none;\n  }\n}', '')
     .replace(':root {', ':host {')
     .replaceAll('.dark', ':host-context(.dark)')
-    .replace('@import "tailwindcss";', '@import "tailwindcss" source(none);\n@source "../ChatComposer.js";\n@source "../Section.js";\n@source "../ApprovalCard.js";\n@source "../ThinkingState.js";\n@source "../Button.js";');
+    .replace('@import "tailwindcss";', '@import "tailwindcss" source(none);\n@source "../ChatComposer.js";\n@source "../Section.js";\n@source "../ApprovalCard.js";\n@source "../ThinkingState.js";\n@source "../ToolChips.js";\n@source "../RunActivity.js";\n@source "../Button.js";');
   const input = new URL('../src/beautiful-ui/upstream/build.css', import.meta.url);
   await writeFile(input, css);
   execFileSync('pnpm', ['exec', 'tailwindcss', '-i', input.pathname, '-o', new URL('../src/beautiful-ui/generated.css', import.meta.url).pathname, '--minify'], { stdio: 'inherit' });

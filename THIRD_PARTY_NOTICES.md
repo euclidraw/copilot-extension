@@ -1,9 +1,11 @@
 # Beautiful UI
 
-ApprovalCard.tsx, ThinkingState.tsx and Button.tsx were retrieved from the official
-`approval-card`, `thinking-state` and `button` registry entries. Local adaptations
-are `ApprovalCard.js`, `ThinkingState.js`, `Button.js`; demo scheduling/questionnaire
-logic is replaced by real provider events and explicit host approval callbacks.
+ToolChips.tsx, LoadingState.tsx, ApprovalCard.tsx, ThinkingState.tsx and Button.tsx
+were retrieved from the official `tool-chips`, `loading-state`, `approval-card`,
+`thinking-state` and `button` registry entries. Local adaptations are `ToolChips.js`,
+`RunActivity.js`, `ApprovalCard.js`, `ThinkingState.js`, `Button.js`; demo
+scheduling/questionnaire logic is replaced by real provider events and explicit
+host approval callbacks.
 
 `src/beautiful-ui/upstream/*` contains the original ChatComposer and foundation
 registry source. The foundation is compiled and embedded, not merely imitated.

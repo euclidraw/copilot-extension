@@ -1,5 +1,14 @@
 # Euclidraw Copilot
 
+0.1.13 restructures conversational turns and composer layout for a natural flow:
+each turn renders a single Copilot header, groups consecutive tool calls into an
+adapted Beautiful UI `ToolChips` trace (expanded while running, collapsed when
+done), folds intermediate pre-tool narration into the trace once the final
+answer arrives, anchors `ApprovalCard` proposals right below the assistant's
+explanation, and adapts Beautiful UI `LoadingState` (pixel-grid wavefront +
+shimmer + tabular timer) for live request activity. Selection, folder and model
+chips are unified inside the composer toolbar.
+
 0.1.12 bridges Beautiful UI semantic colors and shadows to inherited `--alid-*`
 variables. The actual host uses `data-alid-theme`, not `.dark`; the bridge follows
 live host theme changes across Shadow DOM without relying on `:host-context`.

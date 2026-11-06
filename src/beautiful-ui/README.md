@@ -33,3 +33,11 @@ GlideMenu options, fake stage timers and auto-submit are removed: actual plans
 need explicit approval, reject is terminal, and applied status follows host
 success. Thinking expansion is controlled by an accessible button and actual
 provider text, with reduced-motion-safe shimmer. No fixed trace minimum height.
+
+0.1.13 vendors `ToolChips.tsx` and `LoadingState.tsx`. `ToolChips.js` groups
+consecutive tool calls and pre-tool step notes into a collapsible trace that stays
+open while tools run and collapses on completion. `RunActivity.js` adapts
+`LoadingState.tsx`'s 3x3 pixel-grid wavefront, shimmer status and tabular elapsed
+timer. `turn-view.js` organizes each turn as User prompt -> Reasoning -> ToolChips
+-> Assistant answer -> ApprovalCard so proposals sit directly below their
+explanation without repeating the Copilot header across intermediate chunks.

@@ -6,6 +6,7 @@ import { createElement as h } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Section } from '../src/beautiful-ui/Section.js';
 import { ApprovalCard } from '../src/beautiful-ui/ApprovalCard.js';
+import { ToolChips } from '../src/beautiful-ui/ToolChips.js';
 import { createChatStore } from '../src/store.js';
 import { chatStyle } from '../src/chat-style.js';
 
@@ -49,4 +50,24 @@ test('shared Section preserves upstream label hierarchy and body typography', ()
   assert.match(html, /font-medium text-ink/);
   assert.match(html, /text-ink-2/);
   assert.match(html, /Real content/);
+});
+test('ToolChips groups consecutive tool calls and collapses when all tools complete', () => {
+  const runningHtml = renderToStaticMarkup(h(ToolChips, {
+    tools: [{ id: '1', name: 'tools_search', status: 'running' }],
+    notes: ['도구 검색 중'],
+  }));
+  assert.match(runningHtml, /data-beautiful-ui="tool-chips"/);
+  assert.match(runningHtml, /도구 실행 중 \(0\/1\)/);
+  assert.match(runningHtml, /aria-expanded="true"/);
+
+  const doneHtml = renderToStaticMarkup(h(ToolChips, {
+    tools: [
+      { id: '1', name: 'tools_search', status: 'completed' },
+      { id: '2', name: 'tool_invoke', status: 'completed' },
+    ],
+    notes: ['도구 검색 완료'],
+  }));
+  assert.match(doneHtml, /도구 2개 실행됨/);
+  assert.match(doneHtml, /aria-expanded="false"/);
+  assert.match(doneHtml, /hidden=""/);
 });

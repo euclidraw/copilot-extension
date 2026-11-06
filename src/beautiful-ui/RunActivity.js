@@ -1,7 +1,24 @@
-// Adapts Beautiful UI ChatComposer's Section label/sub/time hierarchy and
-// resolving treatment to real agent events; no simulated reasoning or progress.
+// Adapted from Beautiful UI LoadingState.tsx (MIT, copyright 2026 Shane Levine).
+// Uses the upstream 3x3 pixel-grid wavefront, shimmer label and mono elapsed timer
+// driven by real agent status and phases instead of demo timers.
 import { createElement as h, useEffect, useState } from 'react';
-import { Section } from './Section.js';
+
+const CHEVRON_DELAYS = Array.from({ length: 9 }, (_, i) => {
+  const r = Math.floor(i / 3), c = i % 3;
+  return (c + Math.abs(r - 1)) * 90;
+});
+
+function LoaderGrid() {
+  return h('span', { 'aria-hidden': true, className: 'grid shrink-0 grid-cols-[repeat(3,4px)] gap-[1.5px]' },
+    ...CHEVRON_DELAYS.map((delay, index) => h('span', {
+      key: index,
+      className: 'size-[4px] rounded-[1px] bg-ink',
+      style: {
+        opacity: 0.15,
+        animation: `pixel-on 650ms ease-in-out ${delay}ms infinite`,
+      },
+    })));
+}
 
 export function activityLabel(state) {
   if (state.status === 'cancelled') return '응답을 중단했습니다';
@@ -22,10 +39,24 @@ export function RunActivity({ state }) {
     return () => clearInterval(timer);
   }, [running, state.startedAt]);
   if (!running && !['cancelled', 'error'].includes(state.status)) return null;
-  return h('div', { className: 'bui-run-activity', 'data-running': running, 'data-beautiful-ui': 'section' }, h(Section, { label: 'Copilot', sub: running ? '진행 중' : '요청 상태', resolving: running },
-    h('div', { className: 'bui-run-heading' },
-      running && h('span', { className: 'bui-working-dots', 'aria-hidden': true }, h('i'), h('i'), h('i')),
-      h('span', { role: 'status', 'aria-live': 'polite' }, activityLabel(state)),
-      running && h('span', { className: 'bui-run-time', 'aria-label': '경과 시간' }, `${Math.max(0, Math.floor((now - state.startedAt) / 1000))}초`)),
-    running && h('p', null, state.phase === 'tool' ? state.activeTool : state.phase === 'waiting' ? '응답이 도착하면 여기에 표시됩니다. 중단 버튼으로 취소할 수 있습니다.' : state.phase === 'reasoning' ? '모델이 제공한 추론을 아래에서 확인할 수 있습니다.' : '메시지를 실시간으로 받고 있습니다.')));
+  const seconds = Math.max(0, Math.floor(((now || Date.now()) - (state.startedAt || Date.now())) / 1000));
+
+  return h('div', {
+    className: 'bui-run-activity flex w-full items-center gap-2.5 py-1',
+    'data-running': running,
+    'data-beautiful-ui': 'loading-state',
+  },
+    running && h(LoaderGrid),
+    h('span', {
+      role: 'status',
+      'aria-live': 'polite',
+      className: `text-[13px] font-medium ${running ? 'bui-thinking-shimmer text-ink' : 'text-ink-2'}`,
+    }, activityLabel(state)),
+    running && state.phase === 'tool' && state.activeTool && h('span', {
+      className: 'inline-flex h-5 items-center truncate rounded-chip bg-field px-1.5 font-mono text-[11px] text-ink-2 shadow-hairline',
+    }, state.activeTool),
+    running && h('span', {
+      className: 'ml-auto font-mono text-[12px] text-ink-3 tabular-nums',
+      'aria-label': '경과 시간',
+    }, `${seconds}초`));
 }
