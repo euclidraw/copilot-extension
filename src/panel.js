@@ -4,6 +4,7 @@ import { createWorkspaceFiles } from './files.js';
 import { chatStyle } from './chat-style.js';
 import { ChatComposer } from './beautiful-ui/ChatComposer.js';
 import { MessageMarkdown } from './markdown.js';
+import { RunActivity, ReasoningSection } from './beautiful-ui/RunActivity.js';
 import { loadConnection, saveConnection, clearConnection, defaultConnection } from './connection.js';
 
 export function ChatPanel({ store, panelContext, run, changes, tools }) {
@@ -43,6 +44,7 @@ export function ChatPanel({ store, panelContext, run, changes, tools }) {
   const conversation = tab === 'settings' ? settings : h('div', { style: { display: 'contents' } },
     !state.messages.length && h('div', { className: 'bui-empty' }, h('h3', null, '캔버스에서 함께 작업하기'), h('p', null, '선택한 내용을 살펴보고 변경을 제안합니다. 연결 설정에서 모델을 연결해 시작하세요.')),
     ...state.timeline.map((item, index) => {
+      if (item.kind === 'reasoning') return h(ReasoningSection, { key: index, text: item.text });
       if (item.kind === 'message') return h('article', { key: index, className: 'bui-message', 'data-role': item.role }, item.role !== 'user' && h('small', null, 'Copilot'), h(MessageMarkdown, { text: item.text }));
       if (item.kind === 'tool') return h('div', { key: index, className: 'bui-tool-list', 'aria-label': '도구 실행 기록' }, h('span', { className: 'bui-tool', 'data-status': item.status }, `${item.name} · ${{ running: '실행 중', completed: '완료', failed: '실패' }[item.status] ?? item.status}`));
       const proposal = state.proposals.find(proposal => proposal.change.id === item.id);
@@ -56,7 +58,10 @@ export function ChatPanel({ store, panelContext, run, changes, tools }) {
   return h('section', { className: 'copilot', 'aria-label': 'AI chat' },
     h('style', null, chatStyle),
     h(ChatComposer, { tab, onTab: setTab, conversation,
-      activity: (fileError || state.error) && h('div', { role: 'alert', className: 'bui-error' }, fileError || state.error),
+      activity: tab === 'chat' && h('div', { className: 'bui-activity-stack' },
+        h(RunActivity, { state }),
+        state.proposals.some(item => item.status === 'pending') && h('p', { className: 'bui-approval-notice', role: 'status' }, '승인 대기 중 · 위 변경 카드의 내역을 확인해 주세요.'),
+        (fileError || state.error) && h('div', { role: 'alert', className: 'bui-error' }, fileError || state.error)),
       draft: state.draft, onDraft: store.setDraft, onSend: send, running: state.status === 'running', onCancel: () => store.cancel(),
       model: config.model, selection: selected.length, folderConnected: !!files, folderAvailable: !!globalThis.showDirectoryPicker,
       onFolder: async () => { try { setFiles(createWorkspaceFiles(await showDirectoryPicker({ mode: 'readwrite' }))); } catch (error) { if (error.name !== 'AbortError') setFileError(String(error.message)); } },

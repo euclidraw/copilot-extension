@@ -1,5 +1,9 @@
 # Beautiful UI
 
+`src/beautiful-ui/RunActivity.js` also adapts the ChatComposer Section's
+label/sub/time hierarchy for real waiting/tool/streaming state and a native
+reasoning disclosure. Demo resolving blur and simulated phase timers are not used.
+
 `src/beautiful-ui/ChatComposer.js` adapts the layout, composer and send glyph of
 https://www.beautifului.dev/r/chat-composer.json (ChatComposer.tsx).
 `src/chat-style.js` adapts foundation tokens and component utility styles from

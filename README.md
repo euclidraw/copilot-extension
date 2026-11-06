@@ -1,5 +1,12 @@
 # Euclidraw Copilot
 
+0.1.8 adds Beautiful UI Section-based live request feedback: waiting, tool
+execution, response streaming, elapsed time, cancellation/error and approval
+waiting. Actual provider `thinking_delta` events appear as collapsed reasoning
+disclosures in chronological order; reasoning is never fabricated, persisted
+or included in subsequent conversation history. Providers/models that do not
+emit thinking events show progress only, not a reasoning transcript.
+
 AI chat extension, started from `jiwonMe/alid-extension-template`.
 
 ## Development

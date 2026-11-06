@@ -45,7 +45,7 @@ export function createChatStore(storage = globalThis.localStorage) {
       lifetimeSignal?.addEventListener('abort', revoke, { once: true });
       if (lifetimeSignal?.aborted) { revoke(); return; }
       const user = { role: 'user', text, documentId: context.documentId };
-      publish({ draft: '', error: null, status: 'running', messages: [...state.messages, user, { role: 'assistant', text: '', documentId: context.documentId }], timeline: [...state.timeline, { kind: 'message', ...user }] });
+      publish({ draft: '', error: null, status: 'running', phase: 'waiting', startedAt: Date.now(), activeTool: null, messages: [...state.messages, user, { role: 'assistant', text: '', documentId: context.documentId }], timeline: [...state.timeline, { kind: 'message', ...user }] });
       try {
         await run({ text, history, context: frozenContext, signal: current.signal, onTool(event) {
           if (controller !== current || current.signal.aborted) return;
@@ -56,11 +56,17 @@ export function createChatStore(storage = globalThis.localStorage) {
           const position = timeline.findIndex(item => item.kind === 'tool' && item.id === event.id);
           if (position < 0) timeline.push({ kind: 'tool', ...event });
           else timeline[position] = { kind: 'tool', ...event };
-          publish({ tools: tools.slice(-30), timeline });
+          publish({ tools: tools.slice(-30), timeline, phase: event.status === 'running' ? 'tool' : 'waiting', activeTool: event.status === 'running' ? event.name : null });
         }, onProposal(change) {
           if (controller !== current || current.signal.aborted) return;
           if (state.proposals.some(item => item.change.id === change.id)) return;
           publish({ proposals: [...state.proposals, { change, status: 'pending' }], timeline: [...state.timeline, { kind: 'proposal', id: change.id }] });
+        }, onReasoning(delta) {
+          if (controller !== current || current.signal.aborted) return;
+          const timeline = state.timeline.slice(), last = timeline.at(-1);
+          if (last?.kind === 'reasoning') timeline[timeline.length - 1] = { ...last, text: last.text + delta };
+          else timeline.push({ kind: 'reasoning', text: delta });
+          publish({ timeline, phase: 'reasoning' });
         }, onText(delta) {
           if (controller !== current || current.signal.aborted) return;
           const messages = state.messages.slice();
@@ -68,7 +74,7 @@ export function createChatStore(storage = globalThis.localStorage) {
           const timeline = state.timeline.slice(), last = timeline.at(-1);
           if (last?.kind === 'message' && last.role === 'assistant') timeline[timeline.length - 1] = { ...last, text: last.text + delta };
           else timeline.push({ kind: 'message', role: 'assistant', text: delta, documentId: context.documentId });
-          publish({ messages, timeline });
+          publish({ messages, timeline, phase: 'responding' });
         } });
         if (controller === current && !current.signal.aborted) publish({ status: 'idle' });
       } catch (error) {

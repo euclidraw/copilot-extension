@@ -1,5 +1,10 @@
 // Beautiful UI foundation + ChatComposer adaptation; see THIRD_PARTY_NOTICES.md.
 export const chatStyle = `
+.bui-activity-stack,.bui-reasoning{flex-shrink:0;min-width:0}
+.bui-activity-stack:empty{display:none}.bui-run-activity{padding:10px 0 12px}.bui-run-heading{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500}.bui-run-time{margin-left:auto;font-size:11px;font-weight:400;color:var(--ink-2);font-variant-numeric:tabular-nums}.bui-run-activity p{margin:6px 0 0;font-size:11px;line-height:1.6;color:var(--ink-2);overflow-wrap:anywhere}
+.bui-working-dots{display:inline-flex;align-items:center;gap:3px;height:16px}.bui-working-dots i{width:4px;height:4px;border-radius:50%;background:currentColor}
+.bui-reasoning{border-left:2px solid var(--line);padding:2px 0 2px 10px;color:var(--ink-2)}.bui-reasoning summary{cursor:pointer;font-size:12px;font-weight:500;padding:4px 0}.bui-reasoning summary span{font-size:10px;font-weight:400;margin-left:8px}.bui-reasoning-body{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;font-size:12px;line-height:1.7;padding:8px 0}.bui-approval-notice{font-size:11px;line-height:1.6;color:var(--ink-2);padding:8px 0;margin:0;border-top:1px solid var(--line)}
+@media(prefers-reduced-motion:no-preference){.bui-working-dots i{animation:bui-working 1.2s ease-in-out infinite}.bui-working-dots i:nth-child(2){animation-delay:.16s}.bui-working-dots i:nth-child(3){animation-delay:.32s}@keyframes bui-working{0%,80%,100%{opacity:.35;transform:translateY(0)}40%{opacity:1;transform:translateY(-2px)}}}
 .bui-markdown{white-space:normal;overflow-wrap:anywhere;min-width:0}.bui-markdown>:first-child{margin-top:0}.bui-markdown>:last-child{margin-bottom:0}
 .bui-markdown p{margin:8px 0;white-space:pre-wrap}.bui-markdown :is(h1,h2,h3,h4,h5,h6){font-weight:600;line-height:1.4;margin:16px 0 8px;font-size:14px}.bui-markdown h1{font-size:18px}.bui-markdown h2{font-size:16px}
 .bui-markdown :is(ul,ol){padding-left:22px;margin:8px 0}.bui-markdown li+li{margin-top:4px}.bui-markdown blockquote{margin:10px 0;padding:0 10px;border-left:3px solid var(--line);color:var(--ink-2)}

@@ -3,7 +3,7 @@ import { invokeExtensionTool } from './tool-proposals.js';
 
 /** A per-request worker is terminated on cancellation; it is not a trust sandbox. */
 export function createRunner(config, files, tools) {
-  return ({ text, history, context, signal, onText, onProposal, onTool }) => new Promise((resolve, reject) => {
+  return ({ text, history, context, signal, onText, onProposal, onTool, onReasoning }) => new Promise((resolve, reject) => {
     const url = new URL(config.endpoint);
     if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))) throw Error('Use HTTPS or a loopback endpoint');
     if (JSON.stringify(context).length > 65536) throw Error('Selection exceeds context budget. Select fewer entities.');
@@ -20,6 +20,7 @@ export function createRunner(config, files, tools) {
     worker.onmessage = async ({ data }) => {
       if (signal.aborted) return;
       if (data.type === 'text') onText(data.text);
+      if (data.type === 'reasoning') onReasoning?.(data.text);
       if (data.type === 'done') finish();
       if (data.type === 'error') finish(Error(data.error));
       if (data.type === 'tool') {
