@@ -15,6 +15,10 @@ export function createChatStore(storage = globalThis.localStorage) {
     getSnapshot: () => state,
     subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     setDraft: draft => publish({ draft }),
+    newSession() {
+      controller?.abort(); controller = undefined;
+      publish({ messages: [], timeline: [], proposals: [], tools: [], draft: '', status: 'idle', error: null, phase: 'waiting', startedAt: null, activeTool: null });
+    },
     apply(id, changes) {
       const proposal = state.proposals.find(item => item.change.id === id);
       if (!proposal || proposal.status !== 'pending' || state.status === 'running') return;

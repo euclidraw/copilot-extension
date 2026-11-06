@@ -3,7 +3,7 @@
 // draft, real streaming content, multiline input and CJK IME guards added.
 import { createElement as h, useRef, useEffect } from 'react';
 
-export function ChatComposer({ tab, onTab, conversation, activity, draft, onDraft, onSend, running, onCancel, model, selection, onFolder, folderConnected, folderAvailable }) {
+export function ChatComposer({ tab, onTab, conversation, activity, draft, onDraft, onSend, running, onCancel, onNewSession, model, selection, onFolder, folderConnected, folderAvailable }) {
   const input = useRef(null), composing = useRef(false), ended = useRef(-Infinity);
   const thread = useRef(null);
   useEffect(() => {
@@ -17,7 +17,9 @@ export function ChatComposer({ tab, onTab, conversation, activity, draft, onDraf
     h('div', { className: 'bui-chat-bar' },
       h('div', { className: 'bui-tabs', 'aria-label': 'Copilot 보기' },
         ...[['chat', '대화'], ['settings', '연결 설정']].map(([id, label]) => h('button', { key: id, type: 'button', 'aria-pressed': tab === id, onClick: () => onTab(id) }, label))),
-      h('span', { className: 'bui-state', role: 'status' }, running ? '응답 중' : 'Copilot')),
+      h('div', { className: 'bui-header-actions' },
+        h('span', { className: 'bui-state', role: 'status' }, running ? '응답 중' : 'Copilot'),
+        h('button', { type: 'button', className: 'bui-new-session', onClick: onNewSession, 'aria-label': '새 대화 시작', title: '연결 설정을 유지하고 대화를 초기화합니다' }, '+ 새 대화'))),
     h('div', { ref: thread, className: 'bui-thread' }, conversation, activity),
     tab === 'chat' && h('div', { className: 'bui-compose-wrap' },
       h('div', { className: 'bui-context' }, h('span', null, `선택 ${selection}개`), h('span', null, '현재 캔버스')),

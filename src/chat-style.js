@@ -1,5 +1,6 @@
 // Beautiful UI foundation + ChatComposer adaptation; see THIRD_PARTY_NOTICES.md.
 export const chatStyle = `
+.bui-header-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}.bui-new-session{border:0;border-radius:6px;background:transparent;padding:4px 6px;font-size:11px!important;white-space:nowrap}.bui-new-session:hover{background:var(--field)}
 .bui-activity-stack,.bui-reasoning{flex-shrink:0;min-width:0}
 .bui-activity-stack:empty{display:none}.bui-run-activity{padding:10px 0 12px}.bui-run-heading{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500}.bui-run-time{margin-left:auto;font-size:11px;font-weight:400;color:var(--ink-2);font-variant-numeric:tabular-nums}.bui-run-activity p{margin:6px 0 0;font-size:11px;line-height:1.6;color:var(--ink-2);overflow-wrap:anywhere}
 .bui-working-dots{display:inline-flex;align-items:center;gap:3px;height:16px}.bui-working-dots i{width:4px;height:4px;border-radius:50%;background:currentColor}

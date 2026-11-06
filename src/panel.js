@@ -58,6 +58,10 @@ export function ChatPanel({ store, panelContext, run, changes, tools }) {
   return h('section', { className: 'copilot', 'aria-label': 'AI chat' },
     h('style', null, chatStyle),
     h(ChatComposer, { tab, onTab: setTab, conversation,
+      onNewSession: () => {
+        if ((state.messages.length || state.draft || state.proposals.length) && !globalThis.confirm('새 대화를 시작할까요? 현재 대화·초안·승인 대기 내역은 삭제되며 복구할 수 없습니다. 실행 중인 요청은 중단됩니다. 연결 설정과 캔버스는 유지됩니다.')) return;
+        store.newSession(); setFileError(''); setTab('chat');
+      },
       activity: tab === 'chat' && h('div', { className: 'bui-activity-stack' },
         h(RunActivity, { state }),
         state.proposals.some(item => item.status === 'pending') && h('p', { className: 'bui-approval-notice', role: 'status' }, '승인 대기 중 · 위 변경 카드의 내역을 확인해 주세요.'),

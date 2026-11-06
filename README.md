@@ -1,5 +1,11 @@
 # Euclidraw Copilot
 
+0.1.9 adds a header **새 대화** action. After confirmation it aborts the active
+request, clears messages/draft/tool events/pending approvals and stored chat
+history, and starts with no model history. Connection settings, folder access
+and canvas contents remain unchanged. This resets the current conversation;
+it does not archive or provide a session history picker.
+
 0.1.8 adds Beautiful UI Section-based live request feedback: waiting, tool
 execution, response streaming, elapsed time, cancellation/error and approval
 waiting. Actual provider `thinking_delta` events appear as collapsed reasoning
