@@ -635,7 +635,14 @@ var src_default = {
 		const off = context.services.get("ui.workbench").register(extension_default.id, { panels: [{
 			panelId: "euclidraw.copilot.chat",
 			title: "Copilot",
-			icon: "chat",
+			icon: {
+				size: 20,
+				paths: [
+					"M10 3H6a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h1v3l4-3h3a3 3 0 0 0 3-3v-2",
+					"M15 1.5 16.2 4.8 19.5 6 16.2 7.2 15 10.5 13.8 7.2 10.5 6 13.8 4.8Z",
+					"M6.5 10.5h4"
+				]
+			},
 			defaultZone: "left",
 			navigation: {
 				group: "document",

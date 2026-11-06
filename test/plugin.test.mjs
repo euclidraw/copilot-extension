@@ -12,6 +12,8 @@ test('activation contributes a left panel without canonical aspects or writes', 
   } } });
   assert.deepEqual(plugin.aspects, []);
   assert.equal(contribution.panels[0].defaultZone, 'left');
+  assert.equal(contribution.panels[0].icon.size, 20);
+  assert.equal(contribution.panels[0].icon.paths.length, 3);
   result.dispose(); assert.ok(removed);
 });
 test('streaming freezes context and cancellation rejects late text', async () => {
