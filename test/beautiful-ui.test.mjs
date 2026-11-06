@@ -7,6 +7,14 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Section } from '../src/beautiful-ui/Section.js';
 import { ApprovalCard } from '../src/beautiful-ui/ApprovalCard.js';
 import { createChatStore } from '../src/store.js';
+import { chatStyle } from '../src/chat-style.js';
+
+test('Beautiful UI surfaces, ink, actions and shadows inherit the actual host theme across Shadow DOM', () => {
+  for (const [token, host] of Object.entries({ surface: 'bg-surface', field: 'bg-muted', ink: 'text', 'ink-2': 'text-secondary', line: 'border-subtle', accent: 'accent', green: 'success' })) {
+    assert.ok(chatStyle.includes(`--${token}:var(--alid-${host})`), `${token} must follow the host theme`);
+  }
+  assert.match(chatStyle, /color-scheme:inherit/);
+});
 
 test('official foundation is compiled into runtime CSS including tokens and actual utility rules', async () => {
   const upstream = await readFile(new URL('../src/beautiful-ui/upstream/foundation.css', import.meta.url), 'utf8');

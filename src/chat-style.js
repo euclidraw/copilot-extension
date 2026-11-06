@@ -1,6 +1,9 @@
 import foundation from './beautiful-ui/foundation.generated.js';
 // Compiled official foundation/utilities, followed by integration-only styles.
 export const chatStyle = foundation + `
+/* Host theme bridge: inherited variables cross Shadow DOM in every browser,
+   unlike :host-context(), which is not supported by all host browsers. */
+.copilot{--surface:var(--alid-bg-surface);--canvas:var(--alid-bg-canvas);--inset:var(--alid-bg-muted);--field:var(--alid-bg-muted);--hover:var(--alid-bg-muted);--hover-2:var(--alid-border-subtle);--ink:var(--alid-text);--ink-2:var(--alid-text-secondary);--ink-3:var(--alid-text-muted);--line:var(--alid-border-subtle);--line-strong:var(--alid-border-strong);--accent:var(--alid-accent);--accent-ink:var(--alid-accent-hover);--accent-tint:var(--alid-accent-soft);--green:var(--alid-success);--red:var(--alid-danger);--shadow-card:0 0 0 1px var(--line),var(--alid-shadow);--shadow-btn:0 0 0 1px var(--line-strong),var(--alid-shadow);color-scheme:inherit}
 .bui-header-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}.bui-new-session{border:0;border-radius:6px;background:transparent;padding:4px 6px;font-size:11px!important;white-space:nowrap}.bui-new-session:hover{background:var(--field)}
 .bui-activity-stack,.bui-reasoning{flex-shrink:0;min-width:0}
 .bui-activity-stack:empty{display:none}.bui-run-activity{padding:10px 0 12px}.bui-run-heading{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500}.bui-run-time{margin-left:auto;font-size:11px;font-weight:400;color:var(--ink-2);font-variant-numeric:tabular-nums}.bui-run-activity p{margin:6px 0 0;font-size:11px;line-height:1.6;color:var(--ink-2);overflow-wrap:anywhere}

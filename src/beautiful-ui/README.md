@@ -1,5 +1,10 @@
 # Beautiful UI integration
 
+Host integration: the compiled foundation stays intact, while `.copilot` maps
+semantic colors/shadows to inherited `--alid-*` tokens. This is intentional theme
+integration: alid uses `data-alid-theme`, not the upstream `.dark` class. Variable
+inheritance works across Shadow DOM without browser-specific host-context support.
+
 `upstream/ChatComposer.tsx` and `upstream/foundation.css` are unmodified registry
 downloads from beautifului.dev/r/{chat-composer,foundation}.json (2026-11-06).
 MIT, copyright Shane Levine; see THIRD_PARTY_NOTICES.md.

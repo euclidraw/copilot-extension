@@ -1,5 +1,9 @@
 # Euclidraw Copilot
 
+0.1.12 bridges Beautiful UI semantic colors and shadows to inherited `--alid-*`
+variables. The actual host uses `data-alid-theme`, not `.dark`; the bridge follows
+live host theme changes across Shadow DOM without relying on `:host-context`.
+
 0.1.11 adapts the official Beautiful UI ApprovalCard, Button and ThinkingState
 Reasoning sources for change approvals and expandable reasoning. Approval cards
 offer explicit reject/apply actions and collapsible operation details; demo
