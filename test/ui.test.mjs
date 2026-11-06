@@ -25,3 +25,8 @@ test('chat fills the host panel without a nested outer card shell', () => {
   assert.doesNotMatch(shell, /box-shadow|border-radius|border:/);
   assert.match(shell, /min-height:0/);
 });
+test('scrolling thread never compresses approval cards or messages in long conversations', () => {
+  assert.match(chatStyle, /\.bui-thread :is\([^)]*\.bui-message[^)]*\.bui-approval[^)]*\)\{flex-shrink:0;/);
+  assert.match(chatStyle, /\.bui-thread\{[^}]*min-height:0[^}]*overflow:auto/);
+  assert.match(chatStyle, /\.bui-approval pre\{[^}]*max-height:180px;overflow:auto/);
+});

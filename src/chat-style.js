@@ -13,6 +13,9 @@ export const chatStyle = `
 .bui-chat-bar{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px;gap:8px}
 .bui-tabs{display:flex;gap:2px}.bui-tabs button{border:0;background:transparent;border-radius:6px;padding:3px 8px;font-size:13px;color:var(--ink-2)}.bui-tabs button[aria-pressed=true]{background:var(--field);color:var(--ink)}.bui-state{font-size:10px;color:var(--ink-2);padding-right:6px;white-space:nowrap}
 .bui-thread{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;padding:14px 12px;overscroll-behavior:contain}
+/* The thread owns scrolling; its content must never shrink to fit its height.
+   Include grandchildren promoted by the conversation's display:contents. */
+.bui-thread :is(.bui-message,.bui-approval,.bui-tool-list,.bui-empty,.bui-settings,.bui-error){flex-shrink:0;min-width:0}
 .bui-empty{margin:auto 0;padding:28px 8px}.bui-empty h3{font-size:18px;font-weight:500;letter-spacing:-.04em;margin:0 0 8px}.bui-empty p{color:var(--ink-2);font-size:12px;line-height:1.7;margin:0;max-width:27ch}
 .bui-message{white-space:pre-wrap;overflow-wrap:anywhere;padding:4px 0 12px}.bui-message[data-role=user]{align-self:flex-end;max-width:90%;border-radius:12px;background:var(--field);padding:7px 12px;font-size:13px;line-height:1.4;margin-left:28px}.bui-message small{display:block;font-size:11px;font-weight:500;margin-bottom:6px;color:var(--ink-2)}
 .bui-compose-wrap{flex-shrink:0;margin-top:auto;padding:6px}.bui-context{display:flex;gap:6px;padding:0 5px 8px;font-size:10px;color:var(--ink-2)}.bui-context span:first-child{border:1px solid var(--line);border-radius:6px;padding:1px 6px}.bui-context span+span{padding:2px 0}
