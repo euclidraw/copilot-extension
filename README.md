@@ -63,6 +63,12 @@ conflicts and provider/document revocation reject stale plans. Direct generic
 the location of approval cards inside Copilot, and that refreshing discards
 pending plans. Repeated validation errors must not trigger invented payloads.
 
+0.1.7 displays message segments, tool executions and approval cards in arrival
+order, rather than grouping by type. Tool status and approval updates keep their
+original position. The conversation automatically scrolls to the bottom as
+responses stream or cards arrive. Pending approvals and tool events remain
+runtime-only; reloading restores saved message history, not actionable plans.
+
 As of 0.1.1, the chat uses an adapted official Beautiful UI `chat-composer`
 registry component and scoped foundation styles, not just inspired CSS.
 The upstream scripted replies/timers are replaced by real agent events, and

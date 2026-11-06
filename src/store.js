@@ -3,6 +3,7 @@ export function createChatStore(storage = globalThis.localStorage) {
   let saved;
   try { saved = JSON.parse(storage?.getItem(key) ?? 'null'); } catch { /* Unavailable storage is not fatal. */ }
   let state = { messages: Array.isArray(saved?.messages) ? saved.messages.filter(m => ['user', 'assistant'].includes(m.role) && typeof m.text === 'string').slice(-100) : [], proposals: [], draft: '', status: 'idle', error: null };
+  state.timeline = state.messages.map((message, index) => ({ kind: 'message', index, ...message }));
   const listeners = new Set();
   let controller;
   const publish = patch => {
@@ -43,22 +44,31 @@ export function createChatStore(storage = globalThis.localStorage) {
       const revoke = () => { current.abort(); if (controller === current) { controller = undefined; publish({ status: 'cancelled', proposals: state.proposals.filter(item => item.change.documentId !== context.documentId) }); } };
       lifetimeSignal?.addEventListener('abort', revoke, { once: true });
       if (lifetimeSignal?.aborted) { revoke(); return; }
-      publish({ draft: '', error: null, status: 'running', messages: [...state.messages, { role: 'user', text, documentId: context.documentId }, { role: 'assistant', text: '', documentId: context.documentId }] });
+      const user = { role: 'user', text, documentId: context.documentId };
+      publish({ draft: '', error: null, status: 'running', messages: [...state.messages, user, { role: 'assistant', text: '', documentId: context.documentId }], timeline: [...state.timeline, { kind: 'message', ...user }] });
       try {
         await run({ text, history, context: frozenContext, signal: current.signal, onTool(event) {
           if (controller !== current || current.signal.aborted) return;
           const tools = [...(state.tools ?? [])];
           const index = tools.findIndex(tool => tool.id === event.id);
           if (index < 0) tools.push(event); else tools[index] = event;
-          publish({ tools: tools.slice(-30) });
+          const timeline = state.timeline.slice();
+          const position = timeline.findIndex(item => item.kind === 'tool' && item.id === event.id);
+          if (position < 0) timeline.push({ kind: 'tool', ...event });
+          else timeline[position] = { kind: 'tool', ...event };
+          publish({ tools: tools.slice(-30), timeline });
         }, onProposal(change) {
           if (controller !== current || current.signal.aborted) return;
-          publish({ proposals: [...state.proposals, { change, status: 'pending' }] });
+          if (state.proposals.some(item => item.change.id === change.id)) return;
+          publish({ proposals: [...state.proposals, { change, status: 'pending' }], timeline: [...state.timeline, { kind: 'proposal', id: change.id }] });
         }, onText(delta) {
           if (controller !== current || current.signal.aborted) return;
           const messages = state.messages.slice();
           messages[messages.length - 1] = { role: 'assistant', text: messages.at(-1).text + delta, documentId: context.documentId };
-          publish({ messages });
+          const timeline = state.timeline.slice(), last = timeline.at(-1);
+          if (last?.kind === 'message' && last.role === 'assistant') timeline[timeline.length - 1] = { ...last, text: last.text + delta };
+          else timeline.push({ kind: 'message', role: 'assistant', text: delta, documentId: context.documentId });
+          publish({ messages, timeline });
         } });
         if (controller === current && !current.signal.aborted) publish({ status: 'idle' });
       } catch (error) {

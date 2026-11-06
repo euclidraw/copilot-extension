@@ -42,13 +42,17 @@ export function ChatPanel({ store, panelContext, run, changes, tools }) {
     h('small', { role: 'status' }, connectionStatus));
   const conversation = tab === 'settings' ? settings : h('div', { style: { display: 'contents' } },
     !state.messages.length && h('div', { className: 'bui-empty' }, h('h3', null, '캔버스에서 함께 작업하기'), h('p', null, '선택한 내용을 살펴보고 변경을 제안합니다. 연결 설정에서 모델을 연결해 시작하세요.')),
-    ...state.messages.map((message, index) => h('article', { key: index, className: 'bui-message', 'data-role': message.role }, message.role !== 'user' && h('small', null, 'Copilot'), h(MessageMarkdown, { text: message.text }))),
-    !!state.tools?.length && h('div', { className: 'bui-tool-list', 'aria-label': '도구 실행 기록' }, ...state.tools.map(tool => h('span', { key: tool.id, className: 'bui-tool', 'data-status': tool.status }, `${tool.name} · ${{ running: '실행 중', completed: '완료', failed: '실패' }[tool.status] ?? tool.status}`))),
-    ...state.proposals.map(proposal => h('section', { key: proposal.change.id, className: 'bui-approval', 'aria-label': '변경 승인' },
+    ...state.timeline.map((item, index) => {
+      if (item.kind === 'message') return h('article', { key: index, className: 'bui-message', 'data-role': item.role }, item.role !== 'user' && h('small', null, 'Copilot'), h(MessageMarkdown, { text: item.text }));
+      if (item.kind === 'tool') return h('div', { key: index, className: 'bui-tool-list', 'aria-label': '도구 실행 기록' }, h('span', { className: 'bui-tool', 'data-status': item.status }, `${item.name} · ${{ running: '실행 중', completed: '완료', failed: '실패' }[item.status] ?? item.status}`));
+      const proposal = state.proposals.find(proposal => proposal.change.id === item.id);
+      if (!proposal) return null;
+      return h('section', { key: index, className: 'bui-approval', 'aria-label': '변경 승인' },
       h('div', { className: 'bui-approval-title' }, proposal.change.kind === 'file' ? '파일 변경을 승인할까요?' : '캔버스 변경을 승인할까요?'),
       h('pre', null, JSON.stringify(proposal.change.kind === 'file' ? { path: proposal.change.path, text: proposal.change.text } : proposal.change.operations, null, 2)),
       h('footer', null, h('small', null, proposal.change.kind === 'file' ? '외부 편집과 원자적 비교 불가 · 파일 Undo 제외' : '생성·수정·삭제 내역 확인 · 충돌 검사 · 단일 Undo'),
-        h('button', { disabled: (proposal.change.kind === 'file' ? !files : !changes) || proposal.status !== 'pending' || state.status === 'running', onClick: () => proposal.change.kind === 'file' ? store.applyFile(proposal.change.id, files, changes?.getContext()) : store.apply(proposal.change.id, changes) }, proposal.status === 'applied' ? '적용됨' : proposal.status === 'pending' ? '승인 및 적용' : proposal.status)))));
+        h('button', { disabled: (proposal.change.kind === 'file' ? !files : !changes) || proposal.status !== 'pending' || state.status === 'running', onClick: () => proposal.change.kind === 'file' ? store.applyFile(proposal.change.id, files, changes?.getContext()) : store.apply(proposal.change.id, changes) }, proposal.status === 'applied' ? '적용됨' : proposal.status === 'pending' ? '승인 및 적용' : proposal.status)));
+    }));
   return h('section', { className: 'copilot', 'aria-label': 'AI chat' },
     h('style', null, chatStyle),
     h(ChatComposer, { tab, onTab: setTab, conversation,

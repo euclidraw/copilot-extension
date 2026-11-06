@@ -1,10 +1,14 @@
 // Adapted from Beautiful UI ChatComposer.tsx, copyright (c) 2026 Shane Levine.
 // MIT; see THIRD_PARTY_NOTICES.md. Demo phase timers/replies removed; controlled
 // draft, real streaming content, multiline input and CJK IME guards added.
-import { createElement as h, useRef } from 'react';
+import { createElement as h, useRef, useEffect } from 'react';
 
 export function ChatComposer({ tab, onTab, conversation, activity, draft, onDraft, onSend, running, onCancel, model, selection, onFolder, folderConnected, folderAvailable }) {
   const input = useRef(null), composing = useRef(false), ended = useRef(-Infinity);
+  const thread = useRef(null);
+  useEffect(() => {
+    if (tab === 'chat' && thread.current) scrollThreadToEnd(thread.current);
+  }, [tab, conversation, activity]);
   const send = () => {
     if (composing.current || performance.now() - ended.current < 16 || running || !draft.trim()) return;
     onSend();
@@ -14,7 +18,7 @@ export function ChatComposer({ tab, onTab, conversation, activity, draft, onDraf
       h('div', { className: 'bui-tabs', 'aria-label': 'Copilot 보기' },
         ...[['chat', '대화'], ['settings', '연결 설정']].map(([id, label]) => h('button', { key: id, type: 'button', 'aria-pressed': tab === id, onClick: () => onTab(id) }, label))),
       h('span', { className: 'bui-state', role: 'status' }, running ? '응답 중' : 'Copilot')),
-    h('div', { className: 'bui-thread' }, conversation, activity),
+    h('div', { ref: thread, className: 'bui-thread' }, conversation, activity),
     tab === 'chat' && h('div', { className: 'bui-compose-wrap' },
       h('div', { className: 'bui-context' }, h('span', null, `선택 ${selection}개`), h('span', null, '현재 캔버스')),
       h('div', { className: 'bui-composer', onClick: () => input.current?.focus() },
@@ -35,4 +39,8 @@ export function ChatComposer({ tab, onTab, conversation, activity, draft, onDraf
             h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true },
               running ? h('rect', { x: 6, y: 6, width: 12, height: 12, rx: 2 }) : h('path', { d: 'M12 19V5M5 12l7-7 7 7' }))))),
       h('p', { className: 'bui-hint' }, '변경은 승인 후 적용 · Shift + Enter 줄바꿈')));
+}
+
+export function scrollThreadToEnd(element) {
+  element.scrollTop = element.scrollHeight;
 }
