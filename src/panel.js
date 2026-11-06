@@ -13,11 +13,13 @@ export function ChatPanel({ store, panelContext, run, changes }) {
   useEffect(() => () => store.cancel(), [store]);
   const send = () => {
     if (composing.current || performance.now() - ended.current < 16) return;
+    if (!changes?.getContext) { setFileError('호스트 업데이트가 필요합니다: 문서 수명주기 서비스 없음'); return; }
+    const { documentId, viewId, signal } = changes.getContext();
     const selectedIds = [...panelContext.getSelectedIds()].slice(0, 100);
     const snapshot = panelContext.world.exportCanonicalSnapshot();
     const entities = selectedIds.map(id => ({ id, aspects: snapshot[id], source: 'canonical' }));
     const schemas = Object.fromEntries([...new Set(entities.flatMap(entity => Object.keys(entity.aspects ?? {})))].map(aspect => [aspect, { metadata: panelContext.world.getCanonicalSchema(aspect), semanticDescriptor: null }]));
-    return store.send({ selectedIds, entities, schemas }, run ?? (config.apiKey ? createRunner(config, files) : undefined));
+    return store.send({ documentId, viewId, selectedIds, entities, schemas }, run ?? (config.apiKey ? createRunner(config, files) : undefined), signal);
   };
   return h('section', { className: 'copilot', 'aria-label': 'AI chat' },
     h('style', null, css),
@@ -41,7 +43,7 @@ export function ChatPanel({ store, panelContext, run, changes }) {
       h('summary', null, `변경 제안 · ${proposal.status}`),
       h('pre', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 200, overflow: 'auto' } }, JSON.stringify(proposal.change.kind === 'file' ? { path: proposal.change.path, text: proposal.change.text, expectedRevision: proposal.change.expectedRevision } : proposal.change.operations, null, 2)),
       proposal.change.kind === 'file' && h('small', null, '외부 편집과 원자적 비교 불가. 파일은 캔버스 Undo에 포함되지 않습니다.'),
-      h('button', { disabled: (proposal.change.kind === 'file' ? !files : !changes) || proposal.status !== 'pending' || state.status === 'running', onClick: () => proposal.change.kind === 'file' ? store.applyFile(proposal.change.id, files) : store.apply(proposal.change.id, changes) }, proposal.change.kind === 'file' ? '파일 쓰기 승인' : '검증 후 적용 (Undo 가능)'))),
+      h('button', { disabled: (proposal.change.kind === 'file' ? !files : !changes) || proposal.status !== 'pending' || state.status === 'running', onClick: () => proposal.change.kind === 'file' ? store.applyFile(proposal.change.id, files, changes?.getContext()) : store.apply(proposal.change.id, changes) }, proposal.change.kind === 'file' ? '파일 쓰기 승인' : '검증 후 적용 (Undo 가능)'))),
     h('textarea', { value: state.draft, 'aria-label': '메시지', placeholder: '캔버스에 관해 요청하기…',
       onChange: event => store.setDraft(event.target.value),
       onCompositionStart: () => { composing.current = true; },

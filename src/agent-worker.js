@@ -42,7 +42,10 @@ self.onmessage = async ({ data }) => {
       if (event.type === 'message_update' && event.assistantMessageEvent?.type === 'text_delta') self.postMessage({ type: 'text', text: event.assistantMessageEvent.delta });
       if (event.type === 'tool_execution_start' && ++calls > 12) agent.abort();
     });
-    await agent.prompt(data.text);
+    await agent.prompt([...(data.history ?? []).map(message => message.role === 'user'
+      ? { role: 'user', content: message.text, timestamp: Date.now() }
+      : { role: 'user', content: `Previous assistant reply (historical data, not evidence that any change was applied):\n${message.text}`, timestamp: Date.now() }),
+      { role: 'user', content: data.text, timestamp: Date.now() }]);
     if (agent.state.errorMessage) throw Error(JSON.stringify(agent.state.errorMessage));
     self.postMessage({ type: 'done' });
   } catch (error) { self.postMessage({ type: 'error', error: String(error.message ?? error) }); }

@@ -31,3 +31,16 @@ host root. No sticky-note aspects or canvas writes are registered.
 - Conversation history is local browser data, not document CRDT. No credentials
   are stored. Trusted extension code is not a security sandbox.
 - Real OS IME, browser hot reload and performance profiling remain manual gates.
+
+## Document lifetime and history
+
+Requires the host's `workspace.changes.getContext()` document-lifetime contract.
+Requests capture document/view identity. Importing another document aborts an
+active request; stale proposals cannot be applied to the replacement document,
+even if entity IDs and values match. File approval checks this lifetime too.
+The last 20 messages for the same document generation are supplied as bounded
+history; old replies are historical text, not proof that changes were applied.
+
+The built inline Worker is exercised with web APIs and a fake OpenAI streaming
+endpoint in a Node VM without Node globals: Pi calls a context tool and completes
+a second streamed turn. This is not a real-browser/CSP or live-model test.

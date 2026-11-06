@@ -22,37 +22,42 @@ export function createChatStore(storage = globalThis.localStorage) {
         publish({ proposals: state.proposals.map(item => item === proposal ? { ...item, status: 'applied', result } : item), error: null });
       } catch (error) { publish({ error: String(error.message ?? error) }); }
     },
-    async applyFile(id, files) {
+    async applyFile(id, files, context) {
       const proposal = state.proposals.find(item => item.change.id === id);
       if (!proposal || proposal.status !== 'pending' || state.status === 'running') return;
+      if (!context || context.signal.aborted || proposal.change.documentId !== context.documentId) { publish({ error: 'CONFLICT: document is no longer active' }); return; }
       publish({ proposals: state.proposals.map(item => item === proposal ? { ...item, status: 'applying' } : item) });
       try {
-        const result = await files.apply(proposal.change);
+        const result = await files.apply(proposal.change, context.signal);
         publish({ proposals: state.proposals.map(item => item.change.id === id ? { ...item, status: 'applied', result } : item), error: null });
       } catch (error) { publish({ proposals: state.proposals.map(item => item.change.id === id ? { ...item, status: 'failed' } : item), error: String(error.message ?? error) }); }
     },
     cancel() { controller?.abort(); controller = undefined; if (state.status === 'running') publish({ status: 'cancelled' }); },
-    async send(context, run) {
+    async send(context, run, lifetimeSignal) {
       if (state.status === 'running' || !state.draft.trim()) return;
       if (!run) { publish({ error: '모델 연결이 필요합니다. 아직 요청을 전송하지 않았습니다.' }); return; }
       const frozenContext = structuredClone(context);
       const text = state.draft.trim();
+      const history = state.messages.filter(message => message.documentId === context.documentId && message.text).slice(-20).map(({ role, text }) => ({ role, text: text.slice(0, 8000) }));
       const current = controller = new AbortController();
-      publish({ draft: '', error: null, status: 'running', messages: [...state.messages, { role: 'user', text }, { role: 'assistant', text: '' }] });
+      const revoke = () => { current.abort(); if (controller === current) { controller = undefined; publish({ status: 'cancelled', proposals: state.proposals.filter(item => item.change.documentId !== context.documentId) }); } };
+      lifetimeSignal?.addEventListener('abort', revoke, { once: true });
+      if (lifetimeSignal?.aborted) { revoke(); return; }
+      publish({ draft: '', error: null, status: 'running', messages: [...state.messages, { role: 'user', text, documentId: context.documentId }, { role: 'assistant', text: '', documentId: context.documentId }] });
       try {
-        await run({ text, context: frozenContext, signal: current.signal, onProposal(change) {
+        await run({ text, history, context: frozenContext, signal: current.signal, onProposal(change) {
           if (controller !== current || current.signal.aborted) return;
           publish({ proposals: [...state.proposals, { change, status: 'pending' }] });
         }, onText(delta) {
           if (controller !== current || current.signal.aborted) return;
           const messages = state.messages.slice();
-          messages[messages.length - 1] = { role: 'assistant', text: messages.at(-1).text + delta };
+          messages[messages.length - 1] = { role: 'assistant', text: messages.at(-1).text + delta, documentId: context.documentId };
           publish({ messages });
         } });
         if (controller === current && !current.signal.aborted) publish({ status: 'idle' });
       } catch (error) {
         if (controller === current && !current.signal.aborted) publish({ status: 'error', error: String(error.message ?? error) });
-      } finally { if (controller === current) controller = undefined; }
+      } finally { lifetimeSignal?.removeEventListener('abort', revoke); if (controller === current) controller = undefined; }
     },
   };
 }

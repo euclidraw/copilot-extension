@@ -46,3 +46,22 @@ test('proposals require explicit approval and are not replayed', async () => {
   assert.equal(commits, 1);
   assert.equal(store.getSnapshot().proposals[0].status, 'applied');
 });
+test('history is bounded and isolated by document identity', async () => {
+  const store = createChatStore(null);
+  store.setDraft('first'); await store.send({ documentId: 'a' }, async ({ onText }) => onText('answer'));
+  store.setDraft('follow-up'); await store.send({ documentId: 'a' }, async ({ history }) => {
+    assert.deepEqual(history, [{ role: 'user', text: 'first' }, { role: 'assistant', text: 'answer' }]);
+  });
+  store.setDraft('different document'); await store.send({ documentId: 'b' }, async ({ history }) => assert.deepEqual(history, []));
+});
+test('document revocation cancels an in-flight run and ignores late proposals', async () => {
+  const store = createChatStore(null), lifetime = new AbortController();
+  store.setDraft('work');
+  await store.send({ documentId: 'a' }, async ({ signal, onText, onProposal }) => {
+    lifetime.abort(); assert.equal(signal.aborted, true);
+    onText('late'); onProposal({ id: 'late', documentId: 'a' });
+  }, lifetime.signal);
+  assert.equal(store.getSnapshot().status, 'cancelled');
+  assert.equal(store.getSnapshot().proposals.length, 0);
+  assert.equal(store.getSnapshot().messages.at(-1).text, '');
+});
