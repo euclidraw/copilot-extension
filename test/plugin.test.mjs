@@ -35,3 +35,14 @@ test('missing provider never pretends a request was sent; storage failure is tol
   assert.equal(store.getSnapshot().messages.length, 0);
   assert.ok(store.getSnapshot().error);
 });
+test('proposals require explicit approval and are not replayed', async () => {
+  const store = createChatStore(null);
+  store.setDraft('change');
+  await store.send({}, async ({ onProposal }) => onProposal({ id: 'one', operations: [] }));
+  let commits = 0;
+  const changes = { apply(change) { commits++; return { id: change.id }; } };
+  assert.equal(commits, 0);
+  store.apply('one', changes); store.apply('one', changes);
+  assert.equal(commits, 1);
+  assert.equal(store.getSnapshot().proposals[0].status, 'applied');
+});

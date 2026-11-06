@@ -13,7 +13,7 @@ export default {
       panelId: 'euclidraw.copilot.chat', title: 'Copilot', icon: 'chat', defaultZone: 'left',
       navigation: { group: 'document', order: 10 },
       mount(host, panelContext) {
-        return mounts.mount(host, { panelId: 'euclidraw.copilot.chat', Component: ChatPanel, props: { store, panelContext } });
+        return mounts.mount(host, { panelId: 'euclidraw.copilot.chat', Component: ChatPanel, props: { store, panelContext, changes: context.services.get('workspace.changes') } });
       },
     }] });
     return { dispose() { store.cancel(); off(); } };

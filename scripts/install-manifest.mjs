@@ -30,7 +30,7 @@ export async function createInstallManifest(outDir = new URL('dist/', root)) {
     capabilities: {
       readAspects: [],
       writeAspects: [],
-      services: ['ui.react-panels'],
+      services: ['ui.react-panels', 'ui.workbench', 'workspace.changes'],
       commands: [],
     },
   };
