@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ChatComposer } from '../src/beautiful-ui/ChatComposer.js';
+import { chatStyle } from '../src/chat-style.js';
 
 test('official ChatComposer adaptation renders integrated composer and functional view controls', () => {
   const html = renderToStaticMarkup(createElement(ChatComposer, { tab: 'chat', draft: '', model: 'test-model', selection: 2, conversation: 'Real conversation' }));
@@ -18,4 +19,9 @@ test('settings view removes composer and running chat has an accessible stop act
   assert.doesNotMatch(settings, /<textarea/);
   const running = renderToStaticMarkup(createElement(ChatComposer, { tab: 'chat', running: true, draft: '', selection: 0 }));
   assert.match(running, /aria-label="응답 중단"/);
+});
+test('chat fills the host panel without a nested outer card shell', () => {
+  const shell = chatStyle.match(/\.bui-chat\{([^}]+)\}/)[1];
+  assert.doesNotMatch(shell, /box-shadow|border-radius|border:/);
+  assert.match(shell, /min-height:0/);
 });

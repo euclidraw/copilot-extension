@@ -18,10 +18,12 @@ function checkPluginImports() {
 }
 
 export default defineConfig({
+  // Prefer the DOM-free entity decoder (also works in browsers and tests).
+  resolve: { conditions: ['worker', 'module', 'browser', 'development|production'] },
   plugins: [checkPluginImports()],
   build: {
     target: 'es2022',
-    minify: false,
+    minify: true,
     sourcemap: false,
     lib: { entry: fileURLToPath(new URL('src/index.js', import.meta.url)), formats: ['es'], fileName: () => 'plugin.js' },
     // One ESM file plus exact shared host imports; Blob URLs cannot resolve ./chunks.

@@ -5,7 +5,9 @@ import { runInNewContext } from 'node:vm';
 
 test('built browser worker runs Pi tool loop and streams via a fake OpenAI endpoint', { timeout: 10000 }, async () => {
   const bundle = await readFile(new URL('../dist/plugin.js', import.meta.url), 'utf8');
-  const match = bundle.match(/(?:var|const) jsContent = ("[^\n]+");/);
+  // Match one complete JS string literal, including escaped quotes, rather
+  // than the rest of the minified line (which contains other declarations).
+  const match = bundle.match(/(?:var|const)\s+\w+\s*=\s*("\(function\((?:\\.|[^"\\])*")/);
   assert.ok(match, 'inline worker source must be embedded, not a relative asset');
   const source = runInNewContext(match[1]);
   const events = [], requests = [];

@@ -54,6 +54,15 @@ IME-safe multiline input is retained. See `THIRD_PARTY_NOTICES.md` for the MIT
 license and adaptation details. Tool/approval surfaces are local integrations.
 The host's single React root, IME guards and explicit approval remain unchanged.
 
+As of 0.1.2, chat fills the host dock panel directly, without a nested outer
+card's padding, border, rounded corners or shadow. The integrated composer and
+approval surfaces remain. User and assistant messages render Markdown headings,
+lists, fenced code, GFM tables and LaTeX math (`$…$` inline, `$$…$$` display).
+KaTeX emits native MathML without external font assets. Raw HTML is skipped,
+unsafe link protocols are sanitized, remote images display alt text only, and
+trusted TeX commands are disabled. Incomplete streamed markup remains renderable.
+The single ESM bundle is minified to stay below the host's 2 MiB source limit.
+
 When available, `workspace.tools` enables lazy read-only tool search, schema
 description, invocation and selected-aspect semantic descriptors. Trusted tools
 must honor their read-only contract; the registry is not a sandbox. Host runtime

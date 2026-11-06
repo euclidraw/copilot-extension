@@ -3,6 +3,7 @@ import { createRunner } from './runner.js';
 import { createWorkspaceFiles } from './files.js';
 import { chatStyle } from './chat-style.js';
 import { ChatComposer } from './beautiful-ui/ChatComposer.js';
+import { MessageMarkdown } from './markdown.js';
 
 export function ChatPanel({ store, panelContext, run, changes, tools }) {
   const state = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
@@ -28,7 +29,7 @@ export function ChatPanel({ store, panelContext, run, changes, tools }) {
     h('small', null, '키는 현재 세션에만 유지됩니다. 요청 시 API 주소 운영자에게 선택한 문맥을 전송합니다.'));
   const conversation = tab === 'settings' ? settings : h('div', { style: { display: 'contents' } },
     !state.messages.length && h('div', { className: 'bui-empty' }, h('h3', null, '캔버스에서 함께 작업하기'), h('p', null, '선택한 내용을 살펴보고 변경을 제안합니다. 연결 설정에서 모델을 연결해 시작하세요.')),
-    ...state.messages.map((message, index) => h('article', { key: index, className: 'bui-message', 'data-role': message.role }, message.role !== 'user' && h('small', null, 'Copilot'), h('div', null, message.text))),
+    ...state.messages.map((message, index) => h('article', { key: index, className: 'bui-message', 'data-role': message.role }, message.role !== 'user' && h('small', null, 'Copilot'), h(MessageMarkdown, { text: message.text }))),
     !!state.tools?.length && h('div', { className: 'bui-tool-list', 'aria-label': '도구 실행 기록' }, ...state.tools.map(tool => h('span', { key: tool.id, className: 'bui-tool', 'data-status': tool.status }, `${tool.name} · ${{ running: '실행 중', completed: '완료', failed: '실패' }[tool.status] ?? tool.status}`))),
     ...state.proposals.map(proposal => h('section', { key: proposal.change.id, className: 'bui-approval', 'aria-label': '변경 승인' },
       h('div', { className: 'bui-approval-title' }, proposal.change.kind === 'file' ? '파일 변경을 승인할까요?' : '캔버스 변경을 승인할까요?'),
