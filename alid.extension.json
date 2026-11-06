@@ -14,7 +14,7 @@
   "title": "Copilot",
   "summary": "현재 문맥을 확인하고 AI와 캔버스 작업을 진행합니다.",
   "entry": "dist/plugin.js",
-  "sha256": "da947fba27679403ae653273bb04d4738c0998de9e5b670a6d1cee55382bdb05",
+  "sha256": "661e7b6d8e6054de36d48263ad16ba955b401ea12d0fe09d149fb7b7ddaa09c6",
   "aspectIds": [],
   "capabilities": {
     "readAspects": [],

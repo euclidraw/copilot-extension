@@ -22,7 +22,10 @@ host root. No sticky-note aspects or canvas writes are registered.
 - Stage 3 partial: selected existing fields can be proposed and explicitly
   applied through host `workspace.changes`, with conflict checks and one Undo.
   Generic rich-text, opaque, creation and deletion patches are rejected.
-- Workspace files and automatic edit mode are not yet enabled. Sending without a
+- Stage 4 partial: user-picked browser directory, list/read/write/exact patch,
+  UTF-8/size/path checks and per-file approval. `.ecanvas.jsonl` writes are blocked.
+  File revisions are best-effort checks, not atomic CAS against external editors;
+  files are not part of canvas Undo. Automatic edit mode is not yet enabled. Sending without a
   provider reports that no request was sent. Live provider and browser Worker
   execution have not yet been verified; no credentials are bundled.
 - Conversation history is local browser data, not document CRDT. No credentials

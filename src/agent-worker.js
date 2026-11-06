@@ -12,9 +12,13 @@ self.onmessage = async ({ data }) => {
   }
   if (data.type === 'cancel') { agent?.abort(); return; }
   if (data.type !== 'start' || agent) return;
-  const tools = ['context_get', 'entities_read', 'changes_propose'].map(name => ({
-    name, label: name, description: name === 'context_get' ? 'Read frozen selection context' : 'Read selected entity canonical data',
-    parameters: name === 'changes_propose' ? { type: 'object', properties: { operations: { type: 'array', maxItems: 100, items: { type: 'object', properties: { id: { type: 'string' }, aspect: { type: 'string' }, patch: { type: 'object' } }, required: ['id', 'aspect', 'patch'], additionalProperties: false } } }, required: ['operations'], additionalProperties: false } : { type: 'object', properties: {}, additionalProperties: false },
+  const tools = ['context_get', 'entities_read', 'entity_types_list', 'changes_propose', ...(data.filesEnabled ? ['files_list', 'file_read', 'file_write', 'file_patch'] : [])].map(name => ({
+    name, label: name, description: ({ context_get: 'Read frozen selection context', entities_read: 'Read selected entity canonical data', entity_types_list: 'Read schema metadata for selected aspects; semantic descriptors may be unavailable', changes_propose: 'Propose existing canonical field changes for user approval', files_list: 'List connected workspace text paths', file_read: 'Read a UTF-8 file and revision', file_write: 'Propose full file replacement or creation; never applies automatically', file_patch: 'Propose a unique exact-string replacement at a read revision' })[name],
+    parameters: name === 'changes_propose' ? { type: 'object', properties: { operations: { type: 'array', maxItems: 100, items: { type: 'object', properties: { id: { type: 'string' }, aspect: { type: 'string' }, patch: { type: 'object' } }, required: ['id', 'aspect', 'patch'], additionalProperties: false } } }, required: ['operations'], additionalProperties: false }
+      : name === 'file_read' ? { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }
+      : name === 'file_write' ? { type: 'object', properties: { path: { type: 'string' }, text: { type: 'string' }, expectedRevision: { type: ['string', 'null'] } }, required: ['path', 'text', 'expectedRevision'], additionalProperties: false }
+      : name === 'file_patch' ? { type: 'object', properties: { path: { type: 'string' }, search: { type: 'string' }, replacement: { type: 'string' }, expectedRevision: { type: 'string' } }, required: ['path', 'search', 'replacement', 'expectedRevision'], additionalProperties: false }
+      : { type: 'object', properties: {}, additionalProperties: false },
     async execute(_id, args, signal) {
       if (signal?.aborted) throw Error('Cancelled');
       const id = ++sequence;

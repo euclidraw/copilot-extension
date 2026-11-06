@@ -22,6 +22,15 @@ export function createChatStore(storage = globalThis.localStorage) {
         publish({ proposals: state.proposals.map(item => item === proposal ? { ...item, status: 'applied', result } : item), error: null });
       } catch (error) { publish({ error: String(error.message ?? error) }); }
     },
+    async applyFile(id, files) {
+      const proposal = state.proposals.find(item => item.change.id === id);
+      if (!proposal || proposal.status !== 'pending' || state.status === 'running') return;
+      publish({ proposals: state.proposals.map(item => item === proposal ? { ...item, status: 'applying' } : item) });
+      try {
+        const result = await files.apply(proposal.change);
+        publish({ proposals: state.proposals.map(item => item.change.id === id ? { ...item, status: 'applied', result } : item), error: null });
+      } catch (error) { publish({ proposals: state.proposals.map(item => item.change.id === id ? { ...item, status: 'failed' } : item), error: String(error.message ?? error) }); }
+    },
     cancel() { controller?.abort(); controller = undefined; if (state.status === 'running') publish({ status: 'cancelled' }); },
     async send(context, run) {
       if (state.status === 'running' || !state.draft.trim()) return;
