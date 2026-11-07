@@ -4,14 +4,20 @@
 import { createElement as h } from 'react';
 import { Button } from './Button.js';
 
-export function ApprovalCard({ proposal, disabled, onApprove, onReject }) {
+export function ApprovalCard({ proposal, disabled, previewing = false, onPreview, onApprove, onReject }) {
   const { change, status } = proposal;
   const file = change.kind === 'file';
   return h('section', { className: 'bui-approval w-full', 'aria-label': '변경 승인', 'data-beautiful-ui': 'approval-card' },
-    h('div', { className: 'relative overflow-hidden rounded-card bg-surface shadow-card' },
+    h('div', { className: `relative overflow-hidden rounded-card bg-surface shadow-card ${previewing && status === 'pending' ? 'ring-1 ring-accent' : ''}` },
       h('div', { className: 'primitive-card-pad' },
-        h('h3', { className: 'text-[14px] font-medium text-ink' }, file ? '파일 변경을 승인할까요?' : '캔버스 변경을 승인할까요?'),
-        h('p', { className: 'mt-2.5 text-[12px] text-ink-2' }, file ? '외부 편집과 원자적 비교 불가 · 파일 Undo 제외' : '내역 확인 후 적용 · 충돌 검사 · 단일 Undo'),
+        h('div', { className: 'flex items-center justify-between gap-2' },
+          h('h3', { className: 'text-[14px] font-medium text-ink' }, file ? '파일 변경을 승인할까요?' : '캔버스 변경을 승인할까요?'),
+          !file && status === 'pending' && onPreview && h('button', {
+            type: 'button',
+            onClick: onPreview,
+            className: `rounded-chip px-2 py-0.5 text-[11px] font-medium transition-colors duration-100 ${previewing ? 'bg-accent-tint text-accent-ink' : 'bg-field text-ink-2 hover:bg-hover hover:text-ink'}`,
+          }, previewing ? '캔버스 미리보기 중' : '미리보기 보기')),
+        h('p', { className: 'mt-2.5 text-[12px] text-ink-2' }, file ? '외부 편집과 원자적 비교 불가 · 파일 Undo 제외' : '캔버스 미리보기 확인 후 적용 · 충돌 검사 · 단일 Undo'),
         h('details', { className: 'mt-2.5' },
           h('summary', { className: 'cursor-pointer text-[12px] text-ink-2' }, file ? change.path : `변경 내역 ${change.operations.length}개 보기`),
           h('pre', { className: 'bui-plan-code' }, JSON.stringify(file ? { path: change.path, text: change.text } : change.operations, null, 2)))),

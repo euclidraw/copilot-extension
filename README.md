@@ -1,5 +1,12 @@
 # Euclidraw Copilot
 
+0.1.15 automatically previews pending canvas proposals on the host canvas through
+`workspace.changes.preview(change)`: proposed entities and relationships render
+on a nonpersistent ScratchOverlay with a translucent gizmo-blue (`--alid-accent`)
+tint and dashed outline in Space 2A, while the active canvas camera centers and
+scales so the preview bounding box occupies ~50% of the uncovered view. Approving,
+rejecting, clearing the session or unmounting immediately clears the preview.
+
 0.1.14 raises run limits: default output 32,768 tokens (configurable 256–200,000
 in connection settings, saved with the connection), declared context window
 200,000 tokens, up to 100 tool calls per request, 600-second execution budget,

@@ -1,7 +1,7 @@
 {
   "id": "euclidraw.copilot",
   "title": "Copilot",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "summary": "현재 문맥을 확인하고 AI와 캔버스 작업을 진행합니다.",
   "engine": "^0.1.0",
   "dependencies": {},

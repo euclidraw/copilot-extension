@@ -25,8 +25,19 @@ export function ChatPanel({ store, panelContext, run, changes, tools }) {
   const [tab, setTab] = useState('chat');
   const [files, setFiles] = useState(null), [fileError, setFileError] = useState('');
   const [selected, setSelected] = useState(() => [...panelContext.getSelectedIds()]);
+  const [focusedProposalId, setFocusedProposalId] = useState(null);
+  const pendingCanvasProposals = state.proposals.filter(item => item.status === 'pending' && item.change.kind !== 'file');
+  const activePreviewProposal = pendingCanvasProposals.find(item => item.change.id === focusedProposalId) ?? pendingCanvasProposals.at(-1) ?? null;
+
   useEffect(() => panelContext.onSelectionChange(ids => setSelected([...ids])), [panelContext]);
-  useEffect(() => () => store.cancel(), [store]);
+  useEffect(() => {
+    try { changes?.preview?.(activePreviewProposal ? activePreviewProposal.change : null); }
+    catch { /* Stale or conflicting proposal previews fail closed without crashing UI. */ }
+  }, [changes, activePreviewProposal?.change?.id]);
+  useEffect(() => () => {
+    try { changes?.preview?.(null); } catch { /* Ignore disposal errors. */ }
+    store.cancel();
+  }, [store, changes]);
   const send = () => {
     if (!changes?.getContext) { setFileError('호스트 업데이트가 필요합니다: 문서 수명주기 서비스 없음'); return; }
     const { documentId, viewId, signal } = changes.getContext();
@@ -78,6 +89,11 @@ export function ChatPanel({ store, panelContext, run, changes, tools }) {
               ...turn.proposals.map(proposal => h(ApprovalCard, {
                 key: proposal.change.id,
                 proposal,
+                previewing: activePreviewProposal?.change.id === proposal.change.id,
+                onPreview: proposal.change.kind === 'file' ? undefined : () => {
+                  setFocusedProposalId(proposal.change.id);
+                  try { changes?.preview?.(proposal.change); } catch (error) { setFileError(String(error.message ?? error)); }
+                },
                 disabled: (proposal.change.kind === 'file' ? !files : !changes) || state.status === 'running',
                 onReject: () => store.reject(proposal.change.id),
                 onApprove: () => proposal.change.kind === 'file' ? store.applyFile(proposal.change.id, files, changes?.getContext()) : store.apply(proposal.change.id, changes),

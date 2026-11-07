@@ -35,6 +35,12 @@ test('approval uses upstream card and pill actions with controlled application s
   assert.match(render('pending'), /승인 및 적용/);
   assert.match(render('applied'), /적용됨/);
   assert.doesNotMatch(render('rejected'), /승인 및 적용/);
+  const previewing = renderToStaticMarkup(h(ApprovalCard, {
+    proposal: { status: 'pending', change: { operations: [{ id: 'a' }] } },
+    previewing: true,
+    onPreview() {},
+  }));
+  assert.match(previewing, /캔버스 미리보기 중/);
 });
 test('rejected proposals cannot be applied', async () => {
   const store = createChatStore({ getItem: () => null, setItem() {} });
