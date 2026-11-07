@@ -1,5 +1,13 @@
 # Euclidraw Copilot
 
+0.1.14 raises run limits: default output 32,768 tokens (configurable 256–200,000
+in connection settings, saved with the connection), declared context window
+200,000 tokens, up to 100 tool calls per request, 600-second execution budget,
+and history of the last 60 messages (32,000 characters each). Hitting the tool or
+time limit reports which limit stopped the run. Selection context and individual
+tool results remain capped at 64 KB. A value above the model's own output limit
+may be rejected by the provider; lower it if requests fail.
+
 0.1.13 restructures conversational turns and composer layout for a natural flow:
 each turn renders a single Copilot header, groups consecutive tool calls into an
 adapted Beautiful UI `ToolChips` trace (expanded while running, collapsed when

@@ -47,7 +47,7 @@ export function createChatStore(storage = globalThis.localStorage) {
       if (!run) { publish({ error: '모델 연결이 필요합니다. 아직 요청을 전송하지 않았습니다.' }); return; }
       const frozenContext = structuredClone(context);
       const text = state.draft.trim();
-      const history = state.messages.filter(message => message.documentId === context.documentId && message.text).slice(-20).map(({ role, text }) => ({ role, text: text.slice(0, 8000) }));
+      const history = state.messages.filter(message => message.documentId === context.documentId && message.text).slice(-60).map(({ role, text }) => ({ role, text: text.slice(0, 32000) }));
       const current = controller = new AbortController();
       const revoke = () => { current.abort(); if (controller === current) { controller = undefined; publish({ status: 'cancelled', proposals: state.proposals.filter(item => item.change.documentId !== context.documentId) }); } };
       lifetimeSignal?.addEventListener('abort', revoke, { once: true });

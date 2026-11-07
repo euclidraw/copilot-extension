@@ -33,9 +33,10 @@ test('built browser worker runs Pi tool loop and streams via a fake OpenAI endpo
   runInNewContext(source, { self, fetch, console, TextEncoder, TextDecoder, AbortController, AbortSignal,
     URL, URLSearchParams, FormData, Blob, File, Headers, Request, Response, ReadableStream, TransformStream, crypto, setTimeout, clearTimeout, queueMicrotask,
     structuredClone, performance, navigator: { userAgent: 'worker-test' } });
-  await self.onmessage({ data: { type: 'start', text: 'Read selection', history: [{ role: 'user', text: 'Earlier request' }], config: { endpoint: 'https://fake.example/v1', model: 'fake-model', apiKey: 'fake-test-only' } } });
+  await self.onmessage({ data: { type: 'start', text: 'Read selection', history: [{ role: 'user', text: 'Earlier request' }], config: { endpoint: 'https://fake.example/v1', model: 'fake-model', apiKey: 'fake-test-only', maxTokens: 65536 } } });
   await done;
   assert.equal(requests.length, 2);
+  assert.equal(requests[0].max_completion_tokens ?? requests[0].max_tokens, 65536, 'configured output budget reaches the provider request');
   assert.ok(requests[0].messages.some(message => message.content === 'Earlier request'));
   assert.ok(requests[1].messages.some(message => message.role === 'tool' && message.content.includes('selectedIds')), JSON.stringify(requests[1].messages));
   assert.equal(events.filter(event => event.type === 'text').map(event => event.text).join(''), 'Selected entity a.');

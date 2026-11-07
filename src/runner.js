@@ -1,5 +1,6 @@
 import workerSource from './agent-worker.js?worker&inline';
 import { invokeExtensionTool } from './tool-proposals.js';
+import { outputTokens, EXECUTION_BUDGET_MS } from './connection.js';
 
 /** A per-request worker is terminated on cancellation; it is not a trust sandbox. */
 export function createRunner(config, files, tools) {
@@ -8,7 +9,7 @@ export function createRunner(config, files, tools) {
     if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))) throw Error('Use HTTPS or a loopback endpoint');
     if (JSON.stringify(context).length > 65536) throw Error('Selection exceeds context budget. Select fewer entities.');
     const worker = new workerSource();
-    const timer = setTimeout(() => finish(Error('Agent execution budget exceeded')), 120000);
+    const timer = setTimeout(() => finish(Error('실행 시간 한도(10분)를 초과해 중단했습니다.')), EXECUTION_BUDGET_MS);
     const abort = () => finish(new DOMException('Cancelled', 'AbortError'));
     function finish(error) {
       clearTimeout(timer); signal.removeEventListener('abort', abort); worker.terminate();
@@ -62,6 +63,6 @@ export function createRunner(config, files, tools) {
         } catch (error) { onTool?.({ id: toolId, name: data.name, status: 'failed' }); if (!signal.aborted) worker.postMessage({ type: 'tool-result', id: data.id, error: String(error.message) }); }
       }
     };
-    worker.postMessage({ type: 'start', text, history, config, filesEnabled: !!files, toolsEnabled: !!tools });
+    worker.postMessage({ type: 'start', text, history, config: { endpoint: config.endpoint, model: config.model, apiKey: config.apiKey, maxTokens: outputTokens(config.maxTokens) }, filesEnabled: !!files, toolsEnabled: !!tools });
   });
 }
