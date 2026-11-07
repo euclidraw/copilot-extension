@@ -3,7 +3,7 @@
 import { createElement as h, useState } from 'react';
 
 const TOOL_LABELS = {
-  context_get: ['read', '선택 문맥 확인'],
+  context_get: ['read', '캔버스 문맥 확인'],
   entities_read: ['read', '선택 엔티티 읽기'],
   entity_types_list: ['read', '스키마 메타데이터 확인'],
   entity_descriptors: ['read', '도메인 설명 확인'],

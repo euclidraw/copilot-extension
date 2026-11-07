@@ -11,6 +11,7 @@ import { ApprovalCard } from './beautiful-ui/ApprovalCard.js';
 import { Section } from './beautiful-ui/Section.js';
 import { Button } from './beautiful-ui/Button.js';
 import { groupTimelineIntoTurns } from './turn-view.js';
+import { buildCanvasContext } from './canvas-context.js';
 import { loadConnection, saveConnection, clearConnection, defaultConnection, outputTokens, MAX_OUTPUT_TOKENS } from './connection.js';
 
 export function ChatPanel({ store, panelContext, run, changes, tools }) {
@@ -41,11 +42,8 @@ export function ChatPanel({ store, panelContext, run, changes, tools }) {
   const send = () => {
     if (!changes?.getContext) { setFileError('호스트 업데이트가 필요합니다: 문서 수명주기 서비스 없음'); return; }
     const { documentId, viewId, signal } = changes.getContext();
-    const selectedIds = [...panelContext.getSelectedIds()].slice(0, 100);
-    const snapshot = panelContext.world.exportCanonicalSnapshot();
-    const entities = selectedIds.map(id => ({ id, aspects: snapshot[id], source: 'canonical' }));
-    const schemas = Object.fromEntries([...new Set(entities.flatMap(entity => Object.keys(entity.aspects ?? {})))].map(aspect => [aspect, { metadata: panelContext.world.getCanonicalSchema(aspect), semanticDescriptor: null }]));
-    return store.send({ documentId, viewId, selectedIds, entities, schemas }, run ?? (config.apiKey ? createRunner(config, files, tools) : undefined), signal);
+    const context = buildCanvasContext(panelContext.world, panelContext.getSelectedIds(), documentId, viewId);
+    return store.send(context, run ?? (config.apiKey ? createRunner(config, files, tools) : undefined), signal);
   };
   const settings = h('div', { className: 'bui-settings' },
     h('div', { className: 'flex items-center justify-between' },

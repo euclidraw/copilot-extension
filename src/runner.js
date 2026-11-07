@@ -29,7 +29,7 @@ export function createRunner(config, files, tools) {
         onTool?.({ id: toolId, name: data.name, status: 'running' });
         try {
           let result;
-          if (data.name === 'context_get') result = { source: 'selection-at-send', documentId: context.documentId, viewId: context.viewId, selectedIds: context.selectedIds, truncated: false };
+           if (data.name === 'context_get') result = { source: context.scope === 'document' ? 'document-at-send' : 'selection-at-send', documentId: context.documentId, viewId: context.viewId, selectedIds: context.selectedIds, scope: context.scope ?? 'selection', includedEntities: context.entities.length, totalEntities: context.totalEntities ?? context.entities.length, truncated: context.truncated ?? false };
           else if (data.name === 'entities_read') result = context.entities;
           else if (data.name === 'entity_types_list') result = context.schemas;
           else if (data.name === 'tools_search' && tools) result = tools.search(data.args.query);
@@ -50,7 +50,7 @@ export function createRunner(config, files, tools) {
           }
           else if (data.name === 'changes_propose') {
             if (!Array.isArray(data.args?.operations) || !data.args.operations.length || data.args.operations.length > 100) throw Error('INVALID_INPUT');
-            const expected = Object.fromEntries(context.entities.map(entity => [entity.id, entity.aspects]));
+             const expected = Object.fromEntries(context.entities.filter(entity => context.selectedIds.includes(entity.id)).map(entity => [entity.id, entity.aspects]));
             if (data.args.operations.some(op => !Object.hasOwn(expected, op.id))) throw Error('PERMISSION_DENIED: selected targets only');
             const proposal = { id: crypto.randomUUID(), documentId: context.documentId, expected, operations: data.args.operations };
             onProposal(proposal);

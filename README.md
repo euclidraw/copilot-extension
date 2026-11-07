@@ -1,5 +1,13 @@
 # Euclidraw Copilot
 
+0.1.16 includes the entire live canonical canvas in send-time context when it
+contains at most 100 entities and the serialized context (including schemas) is
+at most 48 Ki characters. Larger documents fall back to selection-only context.
+`context_get` reports scope, counts and truncation; `entities_read` returns the
+frozen data. Whole-document reading does not expand `changes_propose` edit
+permission beyond the selection. Scratch previews and cascade-hidden objects
+are excluded.
+
 0.1.15 automatically previews pending canvas proposals on the host canvas through
 `workspace.changes.preview(change)`: proposed entities and relationships render
 on a nonpersistent ScratchOverlay with a translucent gizmo-blue (`--alid-accent`)
