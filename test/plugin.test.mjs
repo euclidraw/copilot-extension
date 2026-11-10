@@ -17,16 +17,17 @@ test('activation contributes a left panel without canonical aspects or writes', 
   result.dispose(); assert.ok(removed);
 });
 
-test('an older host without canvas.snapshot still mounts the chat panel', () => {
+test('an older host without optional services still mounts the chat panel', () => {
   let contribution, mounted;
   const result = plugin.activate({ services: { get(name) {
     if (name === 'ui.react-panels') return { mount(_host, spec) { mounted = spec; } };
     if (name === 'ui.workbench') return { register(_owner, ui) { contribution = ui; return () => {}; } };
-    if (name === 'workspace.changes' || name === 'workspace.tools') return {};
     throw new Error(`[PhantomDependency] unknown host service ${name}`);
   } } });
   contribution.panels[0].mount({}, {});
   assert.equal(mounted.props.snapshot, undefined);
+  assert.equal(mounted.props.changes, undefined);
+  assert.equal(mounted.props.tools, undefined);
   result.dispose();
 });
 test('streaming freezes context and cancellation rejects late text', async () => {

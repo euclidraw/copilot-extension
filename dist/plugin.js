@@ -38594,15 +38594,15 @@ var KS = {
 				group: "document",
 				order: 10
 			},
-			mount(i, a) {
-				return t.mount(i, {
+			mount(e, i) {
+				return t.mount(e, {
 					panelId: "euclidraw.copilot.chat",
 					Component: US,
 					props: {
 						store: r,
-						panelContext: a,
-						changes: e.services.get("workspace.changes"),
-						tools: e.services.get("workspace.tools"),
+						panelContext: i,
+						changes: n("workspace.changes"),
+						tools: n("workspace.tools"),
 						snapshot: n("canvas.snapshot")
 					}
 				});

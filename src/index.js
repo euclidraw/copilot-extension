@@ -20,7 +20,7 @@ export default {
       ] }, defaultZone: 'left',
       navigation: { group: 'document', order: 10 },
       mount(host, panelContext) {
-        return mounts.mount(host, { panelId: 'euclidraw.copilot.chat', Component: ChatPanel, props: { store, panelContext, changes: context.services.get('workspace.changes'), tools: context.services.get('workspace.tools'), snapshot: optional('canvas.snapshot') } });
+        return mounts.mount(host, { panelId: 'euclidraw.copilot.chat', Component: ChatPanel, props: { store, panelContext, changes: optional('workspace.changes'), tools: optional('workspace.tools'), snapshot: optional('canvas.snapshot') } });
       },
     }] });
     return { dispose() { store.cancel(); off(); } };
