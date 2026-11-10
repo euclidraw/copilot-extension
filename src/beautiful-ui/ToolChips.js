@@ -6,6 +6,7 @@ const TOOL_LABELS = {
   context_get: ['read', '캔버스 문맥 확인'],
   entities_read: ['read', '선택 엔티티 읽기'],
   entity_types_list: ['read', '스키마 메타데이터 확인'],
+  canvas_snapshot: ['read', '화면 스냅샷'],
   entity_descriptors: ['read', '도메인 설명 확인'],
   tools_search: ['run', '확장 도구 검색'],
   tool_describe: ['read', '도구 계약 확인'],

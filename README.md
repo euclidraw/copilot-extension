@@ -1,5 +1,18 @@
 # Euclidraw Copilot
 
+0.1.17 adds the read-only `canvas_snapshot` tool. It asks the host to compile
+the current selection and/or the active viewport through the same vector scene
+compiler used by export, rasterizes the result to PNG, and returns the pixels to
+an image-capable model as tool-result image content. Text metadata reports scope,
+pixel size, entity counts, truncation and skipped requests. Small selections are
+rendered above 1× for legibility; images are capped at a 2,048 px long edge and
+`selection, viewport, or both` can be requested. This gives the model visual
+evidence for layout, spacing, typography, overlap and the user-visible result,
+without reading or writing canonical data. Requires the host `canvas.snapshot`
+service; when absent, the tool is not offered and existing context tools still
+work. External HTTP(S) images embedded in a scene may be unavailable to the
+rasterizer; canvas blob images are exported as data URLs.
+
 0.1.16 includes the entire live canonical canvas in send-time context when it
 contains at most 100 entities and the serialized context (including schemas) is
 at most 48 Ki characters. Larger documents fall back to selection-only context.
@@ -87,6 +100,11 @@ host root. No sticky-note aspects or canvas writes are registered.
   files are not part of canvas Undo. Automatic edit mode is not yet enabled. Sending without a
   provider reports that no request was sent. Live provider and browser Worker
   execution have not yet been verified; no credentials are bundled.
+- Pixel context: `canvas_snapshot` reads canonical/computed state through the host
+  scene compiler and returns rendered PNG images. It never commits canonical data,
+  never writes the document and is available only when the host exposes
+  `canvas.snapshot`. Live vision-model and large-document image-quality checks are
+  still manual gates.
 - Conversation history is local browser data, not document CRDT. No credentials
   are stored in conversation history. Since 0.1.3, connection settings (including
   the API key) are stored separately in unencrypted browser localStorage under

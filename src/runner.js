@@ -3,7 +3,7 @@ import { invokeExtensionTool } from './tool-proposals.js';
 import { outputTokens, EXECUTION_BUDGET_MS } from './connection.js';
 
 /** A per-request worker is terminated on cancellation; it is not a trust sandbox. */
-export function createRunner(config, files, tools) {
+export function createRunner(config, files, tools, snapshot) {
   return ({ text, history, context, signal, onText, onProposal, onTool, onReasoning }) => new Promise((resolve, reject) => {
     const url = new URL(config.endpoint);
     if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))) throw Error('Use HTTPS or a loopback endpoint');
@@ -28,10 +28,14 @@ export function createRunner(config, files, tools) {
         const toolId = `${context.documentId}:${crypto.randomUUID()}`;
         onTool?.({ id: toolId, name: data.name, status: 'running' });
         try {
-          let result;
+          let result, images;
            if (data.name === 'context_get') result = { source: context.scope === 'document' ? 'document-at-send' : 'selection-at-send', documentId: context.documentId, viewId: context.viewId, selectedIds: context.selectedIds, scope: context.scope ?? 'selection', includedEntities: context.entities.length, totalEntities: context.totalEntities ?? context.entities.length, truncated: context.truncated ?? false };
           else if (data.name === 'entities_read') result = context.entities;
           else if (data.name === 'entity_types_list') result = context.schemas;
+          else if (data.name === 'canvas_snapshot' && snapshot) {
+            const captured = await snapshot.capture({ scope: data.args?.scope, maxDimension: data.args?.maxDimension, signal });
+            result = captured.result; images = captured.images;
+          }
           else if (data.name === 'tools_search' && tools) result = tools.search(data.args.query);
           else if (data.name === 'tool_describe' && tools) result = tools.describe(data.args.id) ?? { error: 'PROVIDER_UNAVAILABLE' };
           else if (data.name === 'entity_descriptors' && tools) result = tools.descriptors().filter(item => Object.hasOwn(context.schemas, item.aspect));
@@ -59,10 +63,10 @@ export function createRunner(config, files, tools) {
           else throw Error('PERMISSION_DENIED');
           if (JSON.stringify(result).length > 65536) throw Error('Output budget exceeded');
           onTool?.({ id: toolId, name: data.name, status: 'completed' });
-          if (!signal.aborted) worker.postMessage({ type: 'tool-result', id: data.id, result });
+          if (!signal.aborted) worker.postMessage({ type: 'tool-result', id: data.id, result, images });
         } catch (error) { onTool?.({ id: toolId, name: data.name, status: 'failed' }); if (!signal.aborted) worker.postMessage({ type: 'tool-result', id: data.id, error: String(error.message) }); }
       }
     };
-    worker.postMessage({ type: 'start', text, history, config: { endpoint: config.endpoint, model: config.model, apiKey: config.apiKey, maxTokens: outputTokens(config.maxTokens) }, filesEnabled: !!files, toolsEnabled: !!tools });
+    worker.postMessage({ type: 'start', text, history, config: { endpoint: config.endpoint, model: config.model, apiKey: config.apiKey, maxTokens: outputTokens(config.maxTokens) }, filesEnabled: !!files, toolsEnabled: !!tools, snapshotEnabled: !!snapshot });
   });
 }
