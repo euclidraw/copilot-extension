@@ -55,7 +55,7 @@ export function ChatPanel({ store, panelContext, run, changes, tools, snapshot }
       h('input', { type: 'number', min: 256, max: MAX_OUTPUT_TOKENS, step: 1024, inputMode: 'numeric', value: config.maxTokens, autoComplete: 'off', onChange: event => updateConfig('maxTokens', event.target.value) })),
     h('small', null, `응답 1회의 최대 길이입니다. 현재 ${outputTokens(config.maxTokens).toLocaleString()} 토큰으로 요청합니다. 모델의 지원 한도보다 크면 API가 요청을 거부할 수 있으니, 오류가 나면 값을 낮춰 주세요. (256~${MAX_OUTPUT_TOKENS.toLocaleString()})`),
     h('small', null, '변경 사항은 이 브라우저에 자동 저장되며 확장 업데이트 후에도 유지됩니다. API 키는 암호화되지 않은 로컬 저장소에 보관됩니다. 공용 기기에서는 사용 후 지워 주세요. 요청 시 API 주소 운영자에게 선택한 문맥을 전송합니다.'),
-    h('small', null, '캔버스 픽셀 스냅샷은 이미지 입력을 지원하는 모델에서만 동작합니다. 이미지를 받지 못하는 모델은 도구를 호출하지 않거나 오류를 반환할 수 있습니다.'),
+    h('small', null, snapshot ? '캔버스 픽셀 스냅샷 도구가 이 호스트에서 준비되었습니다. 이미지 입력을 지원하는 모델에서만 동작합니다.' : '이 호스트에는 canvas.snapshot 서비스가 없어 캔버스 픽셀 스냅샷을 사용할 수 없습니다. 호스트를 최신 버전으로 업데이트한 뒤 페이지를 새로고침하거나 앱을 다시 실행해 주세요.'),
     h('div', { className: 'flex items-center justify-between gap-2' },
       h(Button, { onClick: () => {
         const cleared = clearConnection();
@@ -69,6 +69,7 @@ export function ChatPanel({ store, panelContext, run, changes, tools, snapshot }
     !turns.length && h('div', { className: 'bui-empty' },
       h('h3', null, '캔버스에서 함께 작업하기'),
       h('p', null, '선택한 내용을 살펴보고 생성·수정·관계 설정을 제안합니다. 모든 변경은 승인 후에만 적용됩니다.'),
+      !snapshot && h('div', { role: 'alert', className: 'bui-error' }, '이 호스트에는 canvas.snapshot 서비스가 없어 픽셀 스냅샷 도구를 쓸 수 없습니다. 호스트를 최신 버전으로 업데이트한 뒤 페이지를 새로고침하거나 앱을 다시 실행해 주세요.'),
       !config.apiKey && h('div', { className: 'mt-3' },
         h(Button, { variant: 'accent', onClick: () => setTab('settings') }, '모델 연결 설정하기'))),
     ...turns.map((turn, index) => {
