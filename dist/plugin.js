@@ -38572,7 +38572,13 @@ var KS = {
 	activate(e) {
 		let t = e.services.get("ui.react-panels");
 		if (!t) throw Error("Copilot requires the ui.react-panels host service. Update the host.");
-		let n = GS(), r = e.services.get("ui.workbench").register(y.id, { panels: [{
+		let n = (t) => {
+			try {
+				return e.services.get(t);
+			} catch {
+				return;
+			}
+		}, r = GS(), i = e.services.get("ui.workbench").register(y.id, { panels: [{
 			panelId: "euclidraw.copilot.chat",
 			title: "Copilot",
 			icon: {
@@ -38588,22 +38594,22 @@ var KS = {
 				group: "document",
 				order: 10
 			},
-			mount(r, i) {
-				return t.mount(r, {
+			mount(i, a) {
+				return t.mount(i, {
 					panelId: "euclidraw.copilot.chat",
 					Component: US,
 					props: {
-						store: n,
-						panelContext: i,
+						store: r,
+						panelContext: a,
 						changes: e.services.get("workspace.changes"),
 						tools: e.services.get("workspace.tools"),
-						snapshot: e.services.get("canvas.snapshot")
+						snapshot: n("canvas.snapshot")
 					}
 				});
 			}
 		}] });
 		return { dispose() {
-			n.cancel(), r();
+			r.cancel(), i();
 		} };
 	}
 };

@@ -8,6 +8,8 @@ export default {
   activate(context) {
     const mounts = context.services.get('ui.react-panels');
     if (!mounts) throw new Error('Copilot requires the ui.react-panels host service. Update the host.');
+    // Optional host services must never take the whole chat panel down on an older host.
+    const optional = id => { try { return context.services.get(id); } catch { return undefined; } };
     const store = createChatStore();
     const off = context.services.get('ui.workbench').register(metadata.id, { panels: [{
       panelId: 'euclidraw.copilot.chat', title: 'Copilot',
@@ -18,7 +20,7 @@ export default {
       ] }, defaultZone: 'left',
       navigation: { group: 'document', order: 10 },
       mount(host, panelContext) {
-        return mounts.mount(host, { panelId: 'euclidraw.copilot.chat', Component: ChatPanel, props: { store, panelContext, changes: context.services.get('workspace.changes'), tools: context.services.get('workspace.tools'), snapshot: context.services.get('canvas.snapshot') } });
+        return mounts.mount(host, { panelId: 'euclidraw.copilot.chat', Component: ChatPanel, props: { store, panelContext, changes: context.services.get('workspace.changes'), tools: context.services.get('workspace.tools'), snapshot: optional('canvas.snapshot') } });
       },
     }] });
     return { dispose() { store.cancel(); off(); } };
